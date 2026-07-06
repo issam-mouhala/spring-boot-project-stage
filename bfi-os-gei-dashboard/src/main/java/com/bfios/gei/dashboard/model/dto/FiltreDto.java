@@ -1,14 +1,14 @@
 package com.bfios.gei.dashboard.model.dto;
 
-import java.time.LocalDate;
-
 import com.bfios.gei.dashboard.model.Canal;
 import com.bfios.gei.dashboard.model.Departement;
 import com.bfios.gei.dashboard.model.EtatDemande;
 import com.bfios.gei.dashboard.model.EtapeWorkflow;
 
+import java.time.LocalDate;
+
 /**
- * Critères de filtrage des demandes (issus de la barre de filtres UI).
+ * Critères de filtrage des demandes.
  * Tous les champs sont optionnels (null = pas de filtre sur ce critère).
  */
 public class FiltreDto {
@@ -20,7 +20,11 @@ public class FiltreDto {
     private EtapeWorkflow etape;
     private Canal canal;
     private Boolean fastTrack;
-    private String search;       // recherche libre sur n° demande, client, radical
+    private String search;
+
+    // ─── NOUVEAU : plage de dates pour le filtre période ───
+    private LocalDate dateDebut;
+    private LocalDate dateFin;
 
     // Getters / Setters
 
@@ -47,12 +51,10 @@ public class FiltreDto {
 
     public String getSearch() { return search; }
     public void setSearch(String search) { this.search = search; }
-    private LocalDate dateDebut;
-private LocalDate dateFin;
 
-public LocalDate getDateDebut() { return dateDebut; }
-public void setDateDebut(LocalDate d) { this.dateDebut = d; }
+    public LocalDate getDateDebut() { return dateDebut; }
+    public void setDateDebut(LocalDate dateDebut) { this.dateDebut = dateDebut; }
 
-public LocalDate getDateFin() { return dateFin; }
-public void setDateFin(LocalDate d) { this.dateFin = d; }
+    public LocalDate getDateFin() { return dateFin; }
+    public void setDateFin(LocalDate dateFin) { this.dateFin = dateFin; }
 }

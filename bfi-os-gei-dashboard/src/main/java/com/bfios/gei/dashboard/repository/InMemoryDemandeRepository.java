@@ -49,7 +49,7 @@ public class InMemoryDemandeRepository {
     //  Données d'exemple (22 demandes — cohérentes avec la maquette)
     // ============================================================
     private void seed() {
-        save(new DemandeGei("200000052", Departement.DOMESTIQUE, "Monétique", "Recalcule du code PIN",
+        save(new DemandeGei("200000059", Departement.DOMESTIQUE, "Monétique", "Recalcule du code PIN",
                 "0000000", "Intitulé 1", true, LocalDate.of(2026, 4, 12),
                 EtatDemande.EN_CREATION, EtapeWorkflow.CA_AC_INITIATION, 1, Canal.DIGITAL,
                 "CA-01", "Agent 3", 1, true));

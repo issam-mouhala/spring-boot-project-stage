@@ -1,11 +1,9 @@
 package com.bfios.gei.dashboard.service;
 
-import com.bfios.gei.dashboard.model.Canal;
-import com.bfios.gei.dashboard.model.DemandeGei;
-import com.bfios.gei.dashboard.model.Departement;
-import com.bfios.gei.dashboard.model.EtatDemande;
+import com.bfios.gei.dashboard.model.*;
 import com.bfios.gei.dashboard.model.dto.*;
 import com.bfios.gei.dashboard.repository.InMemoryDemandeRepository;
+
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -13,49 +11,39 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Service principal de calcul des indicateurs du dashboard.
+ * Service principal du dashboard.
  *
- * Toutes les méthodes prennent en entrée un {@link FiltreDto} optionnel et
- * retournent des DTO prêts à être sérialisés en JSON par les controllers.
+ * ⚠️ CHANGEMENT : injection de DemandeGeiRepository (JPA) à la place
+ * de InMemoryDemandeRepository. Aucune autre modification nécessaire :
+ * JpaRepository expose findAll(), save() etc. — mêmes signatures.
  */
 @Service
 public class DashboardService {
 
-    private final InMemoryDemandeRepository repository;
+    private final DemandeGeiRepository repository;   // ← JPA au lieu de InMemory
     private final SlaService slaService;
 
-    public DashboardService(InMemoryDemandeRepository repository, SlaService slaService) {
-        this.repository = repository;
+    public DashboardService(DemandeGeiRepository repo, SlaService slaService) {
+        this.repository =  repo;
         this.slaService = slaService;
     }
 
     // ============================================================
     //  Filtrage
     // ============================================================
-
-   public List<DemandeGei> findFiltered(FiltreDto f) {
-    return repository.findAll().stream()
-            .filter(d -> matchDepartement(d, f))
-            .filter(d -> matchNature(d, f))
-            .filter(d -> matchProduit(d, f))
-            .filter(d -> matchEtat(d, f))
-            .filter(d -> matchEtape(d, f))
-            .filter(d -> matchCanal(d, f))
-            .filter(d -> matchFastTrack(d, f))
-            .filter(d -> matchSearch(d, f))
-            .filter(d -> matchPeriode(d, f))   // ← NOUVEAU
-            .toList();
-}
-
-// NOUVELLE méthode privée
-private boolean matchPeriode(DemandeGei d, FiltreDto f) {
-    if (f.getDateDebut() == null && f.getDateFin() == null) return true;
-    LocalDate dt = d.getDateDemande();
-    if (dt == null) return false;
-    if (f.getDateDebut() != null && dt.isBefore(f.getDateDebut())) return false;
-    if (f.getDateFin()   != null && dt.isAfter(f.getDateFin()))   return false;
-    return true;
-}
+    public List<DemandeGei> findFiltered(FiltreDto f) {
+        return repository.findAll().stream()
+                .filter(d -> matchDepartement(d, f))
+                .filter(d -> matchNature(d, f))
+                .filter(d -> matchProduit(d, f))
+                .filter(d -> matchEtat(d, f))
+                .filter(d -> matchEtape(d, f))
+                .filter(d -> matchCanal(d, f))
+                .filter(d -> matchFastTrack(d, f))
+                .filter(d -> matchSearch(d, f))
+                .filter(d -> matchPeriode(d, f))   // ← NOUVEAU : filtre date
+                .toList();
+    }
 
     private boolean matchDepartement(DemandeGei d, FiltreDto f) {
         return f.getDepartement() == null || d.getDepartement() == f.getDepartement();
@@ -94,10 +82,19 @@ private boolean matchPeriode(DemandeGei d, FiltreDto f) {
         return hay.contains(q);
     }
 
+    // ─── NOUVEAU : filtre par plage de dates ───
+    private boolean matchPeriode(DemandeGei d, FiltreDto f) {
+        if (f.getDateDebut() == null && f.getDateFin() == null) return true;
+        LocalDate dt = d.getDateDemande();
+        if (dt == null) return false;
+        if (f.getDateDebut() != null && dt.isBefore(f.getDateDebut())) return false;
+        if (f.getDateFin()   != null && dt.isAfter(f.getDateFin()))   return false;
+        return true;
+    }
+
     // ============================================================
     //  KPIs
     // ============================================================
-
     public KpiDto computeKpis(List<DemandeGei> data) {
         int total = data.size();
         int cloturees = (int) data.stream().filter(d -> d.getEtat() == EtatDemande.CLOTUREE).count();
@@ -113,9 +110,8 @@ private boolean matchPeriode(DemandeGei d, FiltreDto f) {
     }
 
     // ============================================================
-    //  TdB2 — Synthèse pivot (dimension × 9 états)
+    //  TdB2 — Synthèse
     // ============================================================
-
     public List<LigneSyntheseDto> computeSynthese(List<DemandeGei> data, String dim) {
         Map<String, List<DemandeGei>> groups;
         switch (dim == null ? "dept" : dim) {
@@ -129,22 +125,22 @@ private boolean matchPeriode(DemandeGei d, FiltreDto f) {
                     d -> d.getDepartement().getLibelle(),
                     LinkedHashMap::new, Collectors.toList()));
         }
-
         List<LigneSyntheseDto> result = new ArrayList<>();
         for (var entry : groups.entrySet()) {
             LigneSyntheseDto ligne = new LigneSyntheseDto(entry.getKey());
             ligne.setTotal(entry.getValue().size());
             for (DemandeGei d : entry.getValue()) {
                 switch (d.getEtat()) {
-                    case EN_CREATION -> ligne.setEnCreation(ligne.getEnCreation() + 1);
-                    case RETOURNEE -> ligne.setRetournee(ligne.getRetournee() + 1);
-                    case EN_COURS_CONTROLE -> ligne.setEnCoursControle(ligne.getEnCoursControle() + 1);
-                    case EN_COURS_TRAITEMENT -> ligne.setEnCoursTraitement(ligne.getEnCoursTraitement() + 1);
-                    case EN_COURS_VALIDATION -> ligne.setEnCoursValidation(ligne.getEnCoursValidation() + 1);
-                    case EN_ATTENTE_DECISION -> ligne.setEnAttenteDecision(ligne.getEnAttenteDecision() + 1);
-                    case EN_ATTENTE_VALIDATION_DECISION -> ligne.setEnAttenteValidationDecision(ligne.getEnAttenteValidationDecision() + 1);
-                    case ANNULEE -> ligne.setAnnulee(ligne.getAnnulee() + 1);
-                    case CLOTUREE -> ligne.setCloturee(ligne.getCloturee() + 1);
+                                    case EN_CREATION -> ligne.setEnCreation(ligne.getEnCreation() + 1);
+                                    case RETOURNEE -> ligne.setRetournee(ligne.getRetournee() + 1);
+                                    case EN_COURS_CONTROLE -> ligne.setEnCoursControle(ligne.getEnCoursControle() + 1);
+                                    case EN_COURS_TRAITEMENT -> ligne.setEnCoursTraitement(ligne.getEnCoursTraitement() + 1);
+                                    case EN_COURS_VALIDATION -> ligne.setEnCoursValidation(ligne.getEnCoursValidation() + 1);
+                                    case EN_ATTENTE_DECISION -> ligne.setEnAttenteDecision(ligne.getEnAttenteDecision() + 1);
+                                    case EN_ATTENTE_VALIDATION_DECISION -> ligne.setEnAttenteValidationDecision(ligne.getEnAttenteValidationDecision() + 1);
+                                    case ANNULEE -> ligne.setAnnulee(ligne.getAnnulee() + 1);
+                                    case CLOTUREE -> ligne.setCloturee(ligne.getCloturee() + 1);
+                                    default -> throw new IllegalArgumentException("Unexpected value: " + d.getEtat());
                 }
             }
             result.add(ligne);
@@ -153,27 +149,21 @@ private boolean matchPeriode(DemandeGei d, FiltreDto f) {
     }
 
     // ============================================================
-    //  TdB3 — SLA par demande
+    //  TdB3 — SLA
     // ============================================================
-
     public List<DemandeSlaDto> computeSlaList(List<DemandeGei> data) {
         return data.stream().map(slaService::computeSlaDto).toList();
     }
 
     // ============================================================
-    //  Vision Responsable A — productivité agents
+    //  Vision Resp A — productivité
     // ============================================================
-
     public List<ProductiviteAgentDto> computeProductiviteAgents(List<DemandeGei> data) {
-        // Liste distincte d'agents (en conservant l'ordre)
         List<String> agents = data.stream()
                 .map(DemandeGei::getAgent)
                 .filter(Objects::nonNull)
                 .distinct()
                 .toList();
-
-        // Pour chaque agent, on génère deux valeurs synthétiques Mois 1 / Mois 2
-        // (données synthétiques — en production, brancher l'historique mensuel)
         List<ProductiviteAgentDto> result = new ArrayList<>();
         for (int i = 0; i < agents.size(); i++) {
             String agent = agents.get(i);
@@ -188,11 +178,8 @@ private boolean matchPeriode(DemandeGei d, FiltreDto f) {
         return ((Math.abs(seed.hashCode() + salt * 31) % 100) / 100.0);
     }
 
-    private double round2(double v) {
-        return Math.round(v * 100) / 100.0;
-    }
+    private double round2(double v) { return Math.round(v * 100) / 100.0; }
 
-    /** Top clients par volume (vision Responsable A). */
     public Map<String, Integer> computeTopClients(List<DemandeGei> data) {
         return data.stream()
                 .collect(Collectors.groupingBy(DemandeGei::getIntituleClient,
@@ -205,13 +192,11 @@ private boolean matchPeriode(DemandeGei d, FiltreDto f) {
     }
 
     // ============================================================
-    //  Vision DG — Top produits + KPIs globaux
+    //  Vision DG
     // ============================================================
-
     public List<TopProduitDto> computeTopProduits(List<DemandeGei> data) {
         Map<String, List<DemandeGei>> byProd = data.stream()
                 .collect(Collectors.groupingBy(DemandeGei::getProduitService));
-
         List<TopProduitDto> list = new ArrayList<>();
         for (var entry : byProd.entrySet()) {
             List<DemandeGei> prods = entry.getValue();
@@ -223,8 +208,6 @@ private boolean matchPeriode(DemandeGei d, FiltreDto f) {
                     Math.round(delaiMoy * 10) / 10.0, slaPct, 0));
         }
         list.sort(Comparator.comparingInt(TopProduitDto::getVolume).reversed());
-
-        // Calcul part volume %
         int totalVol = list.stream().mapToInt(TopProduitDto::getVolume).sum();
         if (totalVol > 0) {
             list = list.stream().map(t -> new TopProduitDto(
@@ -235,15 +218,13 @@ private boolean matchPeriode(DemandeGei d, FiltreDto f) {
         return list.stream().limit(8).toList();
     }
 
-    /** SLA % par département (vision DG). */
     public Map<Departement, Integer> computeSlaByDept(List<DemandeGei> data) {
         Map<Departement, Integer> result = new EnumMap<>(Departement.class);
         for (Departement dept : Departement.values()) {
             List<DemandeGei> subset = data.stream()
                     .filter(d -> d.getDepartement() == dept).toList();
-            if (subset.isEmpty()) {
-                result.put(dept, 0);
-            } else {
+            if (subset.isEmpty()) result.put(dept, 0);
+            else {
                 long ok = subset.stream().filter(DemandeGei::isSlaOk).count();
                 result.put(dept, (int) Math.round((double) ok / subset.size() * 100));
             }
@@ -251,7 +232,6 @@ private boolean matchPeriode(DemandeGei d, FiltreDto f) {
         return result;
     }
 
-    /** Volume par département (pour graphique barres) — toutes les clés présentes. */
     public Map<Departement, Integer> computeVolumeByDept(List<DemandeGei> data) {
         Map<Departement, Integer> result = new EnumMap<>(Departement.class);
         for (Departement dept : Departement.values()) result.put(dept, 0);
@@ -259,7 +239,6 @@ private boolean matchPeriode(DemandeGei d, FiltreDto f) {
         return result;
     }
 
-    /** Volume par état (pour graphique donut) — toutes les clés présentes. */
     public Map<EtatDemande, Integer> computeVolumeByEtat(List<DemandeGei> data) {
         Map<EtatDemande, Integer> result = new EnumMap<>(EtatDemande.class);
         for (EtatDemande etat : EtatDemande.values()) result.put(etat, 0);

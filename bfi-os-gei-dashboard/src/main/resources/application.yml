@@ -1,6 +1,7 @@
-# ============================================
-#  BFI-OS GEI Dashboard — Configuration
-# ============================================
+# ============================================================
+#  Configuration Spring Boot avec SQL Server
+#  Remplace le fichier src/main/resources/application.yml
+# ============================================================
 server:
   port: 8080
   servlet:
@@ -8,25 +9,21 @@ server:
       charset: UTF-8
       enabled: true
       force: true
-
 spring:
-  application:
-    name: bfi-os-gei-dashboard
-  # Static resources cache (short for development)
-  web:
-    resources:
-      cache:
-        cachecontrol:
-          max-age: 0
-          no-cache: true
-          no-store: false
-  # DevTools (hot reload)
-  devtools:
-    restart:
-      enabled: true
-      additional-paths: src/main
+  datasource:
+    url: jdbc:sqlserver://localhost:1433;databaseName=bfios_gei;encrypt=true;trustServerCertificate=true
+    username: sa
+    password: "VotreMotDePasse123!"           # ← votre mot de passe, entre guillemets
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    hikari:
+      maximum-pool-size: 10
 
-# CORS — authorize local frontend dev server if needed
+  jpa:
+    hibernate:
+      ddl-auto: validate           # ← Hibernate valide seulement (ne crée rien)
+    show-sql: false                # ← passer à true pour debug
+    # NE PAS mettre "dialect" — Hibernate 6 le détecte tout seul
+# CORS
 bfi:
   cors:
     allowed-origins: "*"
@@ -35,6 +32,7 @@ bfi:
 logging:
   level:
     com.bfios.gei.dashboard: INFO
-    org.springframework.web: INFO
+    org.hibernate.SQL: WARN           # passer à INFO pour voir les requêtes SQL
+    org.hibernate.type.descriptor.sql.BasicBinder: WARN
   pattern:
     console: "%d{HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n"

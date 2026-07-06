@@ -28,7 +28,33 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+<!-- ============================================================
+     Ajouter ces 2 dépendances dans <dependencies> du pom.xml
+     (à côté des dépendances existantes spring-boot-starter-web, etc.)
+     ============================================================ -->
 
+<!-- JPA : pour utiliser JpaRepository, @Entity, @Column, etc. -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-jpa</artifactId>
+</dependency>
+<dependency>
+    <groupId>com.microsoft.sqlserver</groupId>
+    <artifactId>mssql-jdbc</artifactId>
+</dependency>
+<!-- Pilote SQL Server (driver JDBC officiel Microsoft) -->
+<dependency>
+    <groupId>com.microsoft.sqlserver</groupId>
+    <artifactId>mssql-jdbc</artifactId>
+    <scope>runtime</scope>
+</dependency>
+
+<!-- Optionnel : Lombok (déjà présent dans le projet) -->
+<!-- <dependency>
+    <groupId>org.projectlombok</groupId>
+    <artifactId>lombok</artifactId>
+    <optional>true</optional>
+</dependency> -->
         <!-- Bean validation -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

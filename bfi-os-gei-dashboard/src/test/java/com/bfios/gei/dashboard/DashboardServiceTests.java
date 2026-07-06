@@ -1,6 +1,7 @@
 package com.bfios.gei.dashboard;
 
 import com.bfios.gei.dashboard.model.Canal;
+import com.bfios.gei.dashboard.model.DemandeGeiRepository;
 import com.bfios.gei.dashboard.model.Departement;
 import com.bfios.gei.dashboard.model.EtatDemande;
 import com.bfios.gei.dashboard.model.EtapeWorkflow;
@@ -20,7 +21,7 @@ class DashboardServiceTests {
 
     private final InMemoryDemandeRepository repo = new InMemoryDemandeRepository();
     private final SlaService slaService = new SlaService();
-    private final DashboardService service = new DashboardService(repo, slaService);
+    private final DashboardService service = new DashboardService((DemandeGeiRepository) repo, slaService);
     private final ReferenceDataService refService = new ReferenceDataService();
 
     @Test

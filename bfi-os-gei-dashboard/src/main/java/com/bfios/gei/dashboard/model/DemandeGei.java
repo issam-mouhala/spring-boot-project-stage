@@ -1,32 +1,103 @@
 package com.bfios.gei.dashboard.model;
 
+import jakarta.persistence.*;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
  * Demande GEI unitaire traitée sur OnBase.
- * Entité centrale du modèle de données.
+ * Entité centrale du modèle de données, mappée sur la table DEMANDE_GEI.
+ *
+ * Annotations JPA :
+ *  - @Entity              → cette classe est une entité persistée
+ *  - @Table(name=...)     → nom de la table en base
+ *  - @Id                  → clé primaire
+ *  - @Enumerated(STRING)  → l'enum est stockée par son nom (lisible en base)
+ *  - @Column(name=...)    → mapping explicite colonne SQL
  */
+@Entity
+@Table(name = "DEMANDE_GEI")
 public class DemandeGei {
 
-    private String numDemande;          // ex. "200000052"
-    private Departement departement;
-    private String natureOperation;     // libellé libre (ex. "Monétique")
-    private String produitService;      // libellé libre (ex. "Recalcule du code PIN")
-    private String radicalClient;       // ex. "0000000" ou "-"
-    private String intituleClient;      // ex. "Intitulé 1"
-    private boolean fastTrack;          // OUI / NON
-    private LocalDate dateDemande;
-    private EtatDemande etat;
-    private EtapeWorkflow etape;
-    private int nbIterations;
-    private Canal canal;
-    private Double montant;
-    private String chargeAffaires;      // ex. "CA-01"
-    private String agent;               // ex. "Agent 3"
-    private int delaiTraitement;        // en jours
-    private boolean slaOk;              // respect global du SLA
+    @Id
+    @Column(name = "num_demande", length = 12, nullable = false)
+    private String numDemande;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "departement", length = 20, nullable = false)
+    private Departement departement;
+
+    @Column(name = "nature_operation", length = 100, nullable = false)
+    private String natureOperation;
+
+    @Column(name = "produit_service", length = 250, nullable = false)
+    private String produitService;
+
+    @Column(name = "radical_client", length = 20)
+    private String radicalClient;
+
+    @Column(name = "intitule_client", length = 150)
+    private String intituleClient;
+
+    @Column(name = "fast_track", nullable = false)
+    private boolean fastTrack;
+
+    @Column(name = "date_demande", nullable = false)
+    private LocalDate dateDemande;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "etat", length = 40, nullable = false)
+    private EtatDemande etat;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "etape", length = 40, nullable = false)
+    private EtapeWorkflow etape;
+
+    @Column(name = "nb_iterations", nullable = false)
+    private int nbIterations;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "canal", length = 10, nullable = false)
+    private Canal canal;
+
+    @Column(name = "montant", precision = 15, scale = 2)
+    private BigDecimal montant;
+
+    @Column(name = "charge_affaires", length = 20)
+    private String chargeAffaires;
+
+    @Column(name = "agent", length = 50)
+    private String agent;
+
+    @Column(name = "delai_traitement", nullable = false)
+    private int delaiTraitement;
+
+    @Column(name = "sla_ok", nullable = false)
+    private boolean slaOk;
+
+    @Column(name = "created_at", updatable = false, nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
+    // ─── Hooks JPA pour timestamps automatiques ───
+    @PrePersist
+    protected void onCreate() {
+        LocalDateTime now = LocalDateTime.now();
+        this.createdAt = now;
+        this.updatedAt = now;
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    // ─── Constructeurs ───
     public DemandeGei() {
     }
 
@@ -53,8 +124,7 @@ public class DemandeGei {
         this.slaOk = slaOk;
     }
 
-    // ===== Getters / Setters =====
-
+    // ─── Getters / Setters ───
     public String getNumDemande() { return numDemande; }
     public void setNumDemande(String numDemande) { this.numDemande = numDemande; }
 
@@ -91,8 +161,8 @@ public class DemandeGei {
     public Canal getCanal() { return canal; }
     public void setCanal(Canal canal) { this.canal = canal; }
 
-    public Double getMontant() { return montant; }
-    public void setMontant(Double montant) { this.montant = montant; }
+    public BigDecimal getMontant() { return montant; }
+    public void setMontant(BigDecimal montant) { this.montant = montant; }
 
     public String getChargeAffaires() { return chargeAffaires; }
     public void setChargeAffaires(String chargeAffaires) { this.chargeAffaires = chargeAffaires; }
@@ -105,6 +175,9 @@ public class DemandeGei {
 
     public boolean isSlaOk() { return slaOk; }
     public void setSlaOk(boolean slaOk) { this.slaOk = slaOk; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
 
     @Override
     public boolean equals(Object o) {
