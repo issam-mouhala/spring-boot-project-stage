@@ -1,0 +1,40 @@
+# ============================================
+#  BFI-OS GEI Dashboard — Configuration
+# ============================================
+server:
+  port: 8080
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+spring:
+  application:
+    name: bfi-os-gei-dashboard
+  # Static resources cache (short for development)
+  web:
+    resources:
+      cache:
+        cachecontrol:
+          max-age: 0
+          no-cache: true
+          no-store: false
+  # DevTools (hot reload)
+  devtools:
+    restart:
+      enabled: true
+      additional-paths: src/main
+
+# CORS — authorize local frontend dev server if needed
+bfi:
+  cors:
+    allowed-origins: "*"
+
+# Logging
+logging:
+  level:
+    com.bfios.gei.dashboard: INFO
+    org.springframework.web: INFO
+  pattern:
+    console: "%d{HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n"

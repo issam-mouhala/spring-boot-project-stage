@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BFI-OS GEI • Pilotage &amp; Suivi de l'activité</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  </head>
+  <body>
+    <div class="app">
+      <!-- ============ SIDEBAR ============ -->
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-logo">BFI</div>
+          <div class="brand-text">
+            <span class="brand-title">BFI-OS GEI</span>
+            <span class="brand-sub">· Pilotage</span>
+          </div>
+        </div>
+
+        <nav class="nav">
+          <div class="nav-group">
+            <span class="nav-group-label">Tableaux de bord</span>
+            <a href="#" class="nav-item active" data-view="tdb1">
+              <span class="nav-ico">①</span> TdB1 — Demandes détaillées
+            </a>
+        <!--   <a href="#" class="nav-item" data-view="tdb2">
+              <span class="nav-ico">②</span> TdB2 — Synthèse
+            </a>
+            <a href="#" class="nav-item" data-view="tdb3">
+              <span class="nav-ico">③</span> TdB3 — SLAs
+            </a>
+            <a href="#" class="nav-item" data-view="tdb4">
+              <span class="nav-ico">④</span> TdB4 — CA / Senior Banker
+            </a>
+          </div>
+          <div class="nav-group">
+            <span class="nav-group-label">Visions consolidées</span>
+            <a href="#" class="nav-item" data-view="resp">
+              <span class="nav-ico"></span> Responsable A
+            </a>
+            <a href="#" class="nav-item" data-view="coverage">
+              <span class="nav-ico"></span> Coverage GE
+            </a>
+            <a href="#" class="nav-item" data-view="dg">
+              <span class="nav-ico"></span> Direction Générale
+            </a>-->
+          </div>
+        </nav> 
+
+        <div class="sidebar-footer">
+          <div class="user">
+            <div class="user-avatar">1</div>
+            <div class="user-info">
+              <span class="user-name" id="userName">BFI</span>
+              <span class="user-role">v1.0.0</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- ============ MAIN ============ -->
+      <main class="main">
+        <header class="topbar">
+          <div class="topbar-left">
+            <button id="btnFilters" class="btn-ghost" aria-label="Filtres">
+              <span class="hamb"></span>
+            </button>
+            <div>
+              <h1 id="viewTitle" class="view-title">
+                TdB1 — Demandes détaillées
+              </h1>
+              <p id="viewSub" class="view-sub">
+                Pilotage &amp; suivi de l'activité BFI-OS GEI (détaillé par
+                demande)
+              </p>
+            </div>
+          </div>
+          <div class="topbar-right">
+            <div class="period-range">
+              <div class="period-field">
+                <span class="period-label">Du</span>
+                <input id="dateDebut" type="date" class="input input-date" />
+              </div>
+              <div class="period-field">
+                <span class="period-label">Au</span>
+                <input id="dateFin" type="date" class="input input-date" />
+              </div>
+              <button id="periodReset" class="btn-soft" title="Réinitialiser les dates">✕</button>
+            </div>
+            <button class="btn-icon" title="Exporter Excel" id="btnExport">
+              ⤓
+            </button>
+            <button class="btn-icon" title="Imprimer" onclick="window.print()">
+              🖨
+            </button>
+            <button class="btn-icon" title="Rafraîchir" id="btnRefresh">
+              ↻
+            </button>
+          </div>
+        </header>
+
+        <!-- ============ FILTERS BAR ============ -->
+        <section id="filtersBar" class="filters-bar">
+          <div class="filters-header">
+            <h3>Filtres</h3>
+            <button class="btn-link" id="resetFilters">Réinitialiser</button>
+          </div>
+          <div class="filters-grid">
+            <div class="filter">
+              <label for="fDept">Département</label>
+              <select id="fDept" class="select">
+                <option value="">Tous</option>
+              </select>
+            </div>
+            <div class="filter">
+              <label for="fNat">Nature d'opération</label>
+              <select id="fNat" class="select" disabled>
+                <option value="">Tous</option>
+              </select>
+            </div>
+            <div class="filter">
+              <label for="fProd">Produit / Service</label>
+              <select id="fProd" class="select" disabled>
+                <option value="">Tous</option>
+              </select>
+            </div>
+            <div class="filter">
+              <label for="fEtat">État</label>
+              <select id="fEtat" class="select">
+                <option value="">Tous</option>
+              </select>
+            </div>
+            <div class="filter">
+              <label for="fEtape">Étape actuelle</label>
+              <select id="fEtape" class="select">
+                <option value="">Toutes</option>
+              </select>
+            </div>
+            <div class="filter">
+              <label for="fCanal">Canal</label>
+              <select id="fCanal" class="select">
+                <option value="">Tous</option>
+                <option value="DIGITAL">Digital</option>
+                <option value="PHYSIQUE">Physique</option>
+              </select>
+            </div>
+            <div class="filter">
+              <label for="fFastTrack">Client Fast Track</label>
+              <select id="fFastTrack" class="select">
+                <option value="">Tous</option>
+                <option value="true">OUI</option>
+                <option value="false">NON</option>
+              </select>
+            </div>
+            <div class="filter filter-search">
+              <label for="fSearch">Recherche (n° demande, client)</label>
+              <input
+                id="fSearch"
+                type="text"
+                class="input"
+                placeholder="Ex : 200000047 ou Intitulé 6"
+              />
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ KPI ROW ============ -->
+        <section id="kpiRow" class="kpi-row">
+          <div class="kpi">
+            <span class="kpi-label">Total demandes</span
+            ><span class="kpi-value" id="kpiTotal">—</span
+            ><span class="kpi-trend up">API</span>
+          </div>
+          <div class="kpi">
+            <span class="kpi-label">Clôturées</span
+            ><span class="kpi-value" id="kpiCloturees">—</span
+            ><span class="kpi-trend up">▲</span>
+          </div>
+          <div class="kpi">
+            <span class="kpi-label">En cours</span
+            ><span class="kpi-value" id="kpiEnCours">—</span
+            ><span class="kpi-trend down">▼</span>
+          </div>
+          <div class="kpi">
+            <span class="kpi-label">Annulées</span
+            ><span class="kpi-value" id="kpiAnnulees">—</span
+            ><span class="kpi-trend">—</span>
+          </div>
+          <div class="kpi kpi-sla">
+            <span class="kpi-label">Respect SLA</span
+            ><span class="kpi-value" id="kpiSla">—</span
+            ><span class="kpi-trend up">▲</span>
+          </div>
+          <div class="kpi">
+            <span class="kpi-label">Délai moyen</span
+            ><span class="kpi-value" id="kpiDelai">—</span
+            ><span class="kpi-trend down">▼</span>
+          </div>
+        </section>
+
+        <!-- ============ VIEW CONTAINER ============ -->
+        <section id="viewContainer" class="view-container">
+          <!-- TdB1 -->
+          <div class="view active" id="view-tdb1">
+            <div class="card">
+              <div class="card-header">
+                <h3>Liste des demandes GEI traitées sur OnBase</h3>
+                <div class="card-actions">
+                  <span class="badge badge-muted" id="tdb1Count"
+                    >— demande(s)</span
+                  >
+                  <button class="btn-soft" id="exportCsvTdb1">⤓ CSV</button>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table class="data-table" id="tdb1Table">
+                  <thead>
+                    <tr>
+                      <th>N° demande</th>
+                      <th>Agent</th>
+                      <th>Département</th>
+                      <th>Nature</th>
+                      <th>Produit / Service</th>
+                      <th>Radical</th>
+                      <th>Intitulé Client</th>
+                      <th>Fast Track</th>
+                      <th>Date demande</th>
+                      <th>État</th>
+                      <th>Étape actuelle</th>
+                      <th>Itér.</th>
+                      <th>montant</th>
+                      <th>Canal</th>
+                      <th>Délai</th>
+                      <th>Analyse délai</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td colspan="14" class="loading">Chargement…</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- TdB2 -->
+          <div class="view" id="view-tdb2">
+            <div class="card">
+              <div class="card-header">
+                <h3>Synthèse par département et par statut</h3>
+                <div class="card-actions">
+                  <label class="seg"
+                    ><input
+                      type="radio"
+                      name="tdb2Dim"
+                      value="dept"
+                      checked
+                    /><span>Département</span></label
+                  >
+                  <label class="seg"
+                    ><input type="radio" name="tdb2Dim" value="nat" /><span
+                      >Nature</span
+                    ></label
+                  >
+                  <label class="seg"
+                    ><input type="radio" name="tdb2Dim" value="prod" /><span
+                      >Produit</span
+                    ></label
+                  >
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table class="data-table" id="tdb2Table">
+                  <thead>
+                    <tr>
+                      <th>Dimension</th>
+                      <th>Total traité</th>
+                      <th>En création</th>
+                      <th>Retournée</th>
+                      <th>En cours contrôle</th>
+                      <th>En cours traitement</th>
+                      <th>En cours validation</th>
+                      <th>En attente décision</th>
+                      <th>En attente validation déc.</th>
+                      <th>Annulée</th>
+                      <th>Clôturée</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td colspan="11" class="loading">Chargement…</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="grid-2">
+              <div class="card">
+                <div class="card-header"><h3>Répartition par état</h3></div>
+                <div class="chart-box"><canvas id="chartEtat"></canvas></div>
+              </div>
+              <div class="card">
+                <div class="card-header">
+                  <h3>Répartition par département</h3>
+                </div>
+                <div class="chart-box"><canvas id="chartDept"></canvas></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TdB3 -->
+          <div class="view" id="view-tdb3">
+            <div class="card">
+              <div class="card-header">
+                <h3>SLAs de l'activité BFI-OS GEI</h3>
+                <div class="legend">
+                  <span class="legend-item"
+                    ><span class="dot dot-green"></span> Dans les délais (≤
+                    SLA)</span
+                  >
+                  <span class="legend-item"
+                    ><span class="dot dot-red"></span> Hors délais (&gt;
+                    SLA)</span
+                  >
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table class="data-table sla-table" id="tdb3Table">
+                  <thead>
+                    <tr>
+                      <th rowspan="2">Agent</th>
+                      <th rowspan="2">N° demande</th>
+                      <th rowspan="2">Intitulé Client</th>
+                      <th rowspan="2">Radical</th>
+                      <th rowspan="2">Étape actuelle</th>
+                      <th colspan="3" class="col-stage">CA/AC — Initiation</th>
+                      <th colspan="3" class="col-stage">Chef.D — Contrôle</th>
+                      <th colspan="3" class="col-stage">Vérification</th>
+                      <th colspan="3" class="col-stage">Validation</th>
+                      <th colspan="3" class="col-stage">CA — Décision</th>
+                      <th colspan="3" class="col-stage">DMO — Validation</th>
+                      <th rowspan="2">Total (j)</th>
+                    </tr>
+                    <tr>
+                      <th>SLA</th>
+                      <th>Réa</th>
+                      <th>Écart</th>
+                      <th>SLA</th>
+                      <th>Réa</th>
+                      <th>Écart</th>
+                      <th>SLA</th>
+                      <th>Réa</th>
+                      <th>Écart</th>
+                      <th>SLA</th>
+                      <th>Réa</th>
+                      <th>Écart</th>
+                      <th>SLA</th>
+                      <th>Réa</th>
+                      <th>Écart</th>
+                      <th>SLA</th>
+                      <th>Réa</th>
+                      <th>Écart</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td colspan="22" class="loading">Chargement…</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- TdB4 -->
+          <div class="view" id="view-tdb4">
+            <div class="card">
+              <div class="card-header">
+                <h3>
+                  Demandes par Chargé d'affaires / Senior Banker / Resp MO /
+                  DGEI
+                </h3>
+                <span class="badge badge-muted" id="tdb4Count">—</span>
+              </div>
+              <div class="table-wrap">
+                <table class="data-table" id="tdb4Table">
+                  <thead>
+                    <tr>
+                      <th>N° demande</th>
+                      <th>Département</th>
+                      <th>Nature</th>
+                      <th>Produit / Service</th>
+                      <th>CST</th>
+                      <th>Radical</th>
+                      <th>Intitulé Client</th>
+                      <th>Fast Track</th>
+                      <th>Date</th>
+                      <th>État</th>
+                      <th>Étape</th>
+                      <th>Itér.</th>
+                      <th>Canal</th>
+                      <th>Chargé d'affaires</th>
+                      <th>Agent</th>
+                      <th>Délai</th>
+                      <th>Analyse délai</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td colspan="17" class="loading">Chargement…</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vision Responsable A -->
+          <div class="view" id="view-resp">
+            <div class="grid-2">
+              <div class="card">
+                <div class="card-header">
+                  <h3>Productivité des agents — Mois 1 vs Mois 2</h3>
+                </div>
+                <div class="chart-box"><canvas id="chartAgents"></canvas></div>
+              </div>
+              <div class="card">
+                <div class="card-header">
+                  <h3>Variation du volume par agent</h3>
+                </div>
+                <div class="table-wrap">
+                  <table class="data-table" id="respTable">
+                    <thead>
+                      <tr>
+                        <th>Agent</th>
+                        <th>Mois 1</th>
+                        <th>Mois 2</th>
+                        <th>Variation</th>
+                        <th>Tendance</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td colspan="5" class="loading">Chargement…</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div class="grid-2">
+              <div class="card">
+                <div class="card-header">
+                  <h3>Activité clients (top 10)</h3>
+                </div>
+                <div class="chart-box"><canvas id="chartClients"></canvas></div>
+              </div>
+              <div class="card">
+                <div class="card-header">
+                  <h3>Évolution du délai global</h3>
+                </div>
+                <div class="chart-box">
+                  <canvas id="chartDelaiGlobal"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vision Coverage GE -->
+          <div class="view" id="view-coverage">
+            <div class="grid-3">
+              <div class="card stat-card">
+                <span class="stat-label">Couverture clients</span
+                ><span class="stat-value">87%</span
+                ><span class="stat-trend up">▲ +4 pts</span>
+              </div>
+              <div class="card stat-card">
+                <span class="stat-label">Demandes par client</span
+                ><span class="stat-value">2,4</span
+                ><span class="stat-trend up">▲ +0,3</span>
+              </div>
+              <div class="card stat-card">
+                <span class="stat-label">Délai moyen GE</span
+                ><span class="stat-value">3,2 j</span
+                ><span class="stat-trend down">▼ -0,5 j</span>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header"><h3>Couverture par département</h3></div>
+              <div class="chart-box tall">
+                <canvas id="chartCoverage"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vision DG -->
+          <div class="view" id="view-dg">
+            <div class="grid-4">
+              <div class="card stat-card">
+                <span class="stat-label">Volume total traité</span
+                ><span class="stat-value" id="dgTotal">—</span
+                ><span class="stat-trend up">▲</span>
+              </div>
+              <div class="card stat-card">
+                <span class="stat-label">Taux de clôture</span
+                ><span class="stat-value" id="dgCloture">—</span
+                ><span class="stat-trend up">▲</span>
+              </div>
+              <div class="card stat-card">
+                <span class="stat-label">Respect SLA global</span
+                ><span class="stat-value" id="dgSla">—</span
+                ><span class="stat-trend up">▲</span>
+              </div>
+              <div class="card stat-card">
+                <span class="stat-label">Délai moyen global</span
+                ><span class="stat-value" id="dgDelai">—</span
+                ><span class="stat-trend down">▼</span>
+              </div>
+            </div>
+            <div class="grid-2">
+              <div class="card">
+                <div class="card-header">
+                  <h3>Évolution mensuelle du volume traité</h3>
+                </div>
+                <div class="chart-box">
+                  <canvas id="chartDgVolume"></canvas>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-header"><h3>SLA par département (%)</h3></div>
+                <div class="chart-box"><canvas id="chartDgSla"></canvas></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <h3>Top produits / services traités</h3>
+              </div>
+              <div class="table-wrap">
+                <table class="data-table" id="dgTopTable">
+                  <thead>
+                    <tr>
+                      <th>Produit / Service</th>
+                      <th>Volume</th>
+                      <th>Délai moyen (j)</th>
+                      <th>SLA respecté</th>
+                      <th>Part de volume</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td colspan="5" class="loading">Chargement…</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="js/app.js"></script>
+  </body>
+</html>
