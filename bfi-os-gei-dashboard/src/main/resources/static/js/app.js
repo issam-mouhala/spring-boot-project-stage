@@ -264,7 +264,10 @@ async function loadTdB1() {
       tbody.innerHTML = `<tr><td colspan="14" style="text-align:center;padding:30px;color:var(--c-text-3);">Aucune demande ne correspond aux filtres</td></tr>`;
       return;
     }
-    tbody.innerHTML = data.map(r => `
+    const totalMontant = data.reduce((sum, r) => sum + r.montant, 0);
+
+    $('#kpiMontant').textContent   = totalMontant + ' DH'
+        tbody.innerHTML = data.map(r => `
       <tr>
         <td class="num">${escapeHtml(r.numDemande)}</td>
         <td>${escapeHtml(r.agent)}</td>
@@ -280,7 +283,7 @@ async function loadTdB1() {
         <td class="num">${r.nbIterations}</td>
         <td><span class="badge ${r.canal === 'DIGITAL' ? 'badge-canal-digital' : 'badge-canal-physique'}">${r.canal}</span></td>
         <td class="num">${r.delaiTraitement} j</td>
-        <td class="num">-<!--${r.montant}--> DH</td>
+        <td class="num">${r.montant} DH</td>
         <td>${r.slaOk
           ? '<span class="badge" style="background:var(--c-green-soft);color:var(--c-green)">Dans les délais</span>'
           : '<span class="badge" style="background:var(--c-red-soft);color:var(--c-red)">Hors délais</span>'}</td>
@@ -553,7 +556,7 @@ async function loadDG() {
       scales: { y: { beginAtZero: false, grid: { color: "rgba(0,0,0,.05)" } }, x: { grid: { display: false } } } }
   });
 
-  const slaByDept = summary.slaByDept;
+  const {slaByDept} = summary;
   const labels = Object.keys(slaByDept);
   const values = Object.values(slaByDept);
   if (chartDgSla) chartDgSla.destroy();

@@ -51,6 +51,8 @@ public class FiltreDto {
 
     public String getSearch() { return search; }
     public void setSearch(String search) { this.search = search; }
+    public String getMontant() { return search; }
+    public void setMontant(String search) { this.search = search; }
 
     public LocalDate getDateDebut() { return dateDebut; }
     public void setDateDebut(LocalDate dateDebut) { this.dateDebut = dateDebut; }

@@ -13,7 +13,7 @@ spring:
   datasource:
     url: jdbc:sqlserver://localhost:1433;databaseName=bfios_gei;encrypt=true;trustServerCertificate=true
     username: sa
-    password: "VotreMotDePasse123!"           # ← votre mot de passe, entre guillemets
+    password: "20021123"           # ← votre mot de passe, entre guillemets
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
     hikari:
       maximum-pool-size: 10

@@ -78,7 +78,7 @@ public class DashboardService {
     private boolean matchSearch(DemandeGei d, FiltreDto f) {
         if (f.getSearch() == null || f.getSearch().isBlank()) return true;
         String q = f.getSearch().toLowerCase();
-        String hay = (d.getNumDemande() + " " + d.getIntituleClient() + " " + d.getRadicalClient()).toLowerCase();
+        String hay = (d.getNumDemande() + " " + d.getIntituleClient() + " " + d.getRadicalClient()+ " "+d.getAgent().toLowerCase());
         return hay.contains(q);
     }
 
