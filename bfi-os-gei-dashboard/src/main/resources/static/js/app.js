@@ -297,38 +297,181 @@ async function loadTdB1() {
 /* -----------------------------------------------------------
    8. TdB2 — Synthèse
    ----------------------------------------------------------- */
-let chartEtat, chartDept;
+let chartEtat,chartSla, chartDept;
 async function loadTdB2() {
   const dim = document.querySelector('input[name="tdb2Dim"]:checked').value;
   const data = await apiGet('/dashboard/synthese', { ...currentFilters(), dim });
   const tbody = $('#tdb2Table tbody');
   let grandTotal = 0;
-  tbody.innerHTML = data.map(g => {
-    grandTotal += g.total;
-    return `
-      <tr>
-        <td><strong>${escapeHtml(g.dimension)}</strong></td>
-        <td class="num">${g.total}</td>
-        <td class="num">${g.enCreation}</td>
-        <td class="num">${g.retournee}</td>
-        <td class="num">${g.enCoursControle}</td>
-        <td class="num">${g.enCoursTraitement}</td>
-        <td class="num">${g.enCoursValidation}</td>
-        <td class="num">${g.enAttenteDecision}</td>
-        <td class="num">${g.enAttenteValidationDecision}</td>
-        <td class="num">${g.annulee}</td>
-        <td class="num">${g.cloturee}</td>
-      </tr>
-    `;
-  }).join('');
+  let totalEnCreation = 0;
+  let totalRetournee = 0;
+  let totalEnCoursControle = 0;
+  let totalEnCoursTraitement = 0;
+  let totalEnCoursValidation = 0;
+  let totalEnAttenteDecision = 0;
+  let totalEnAttenteValidationDecision = 0;
+  let totalAnnulee = 0;
+  let totalCloturee = 0;
+  
+  const tdb2_content = data.map(g => {
+  
+      grandTotal += Number(g.total || 0);
+      totalEnCreation += Number(g.enCreation || 0);
+      totalRetournee += Number(g.retournee || 0);
+      totalEnCoursControle += Number(g.enCoursControle || 0);
+      totalEnCoursTraitement += Number(g.enCoursTraitement || 0);
+      totalEnCoursValidation += Number(g.enCoursValidation || 0);
+      totalEnAttenteDecision += Number(g.enAttenteDecision || 0);
+      totalEnAttenteValidationDecision += Number(g.enAttenteValidationDecision || 0);
+      totalAnnulee += Number(g.annulee || 0);
+      totalCloturee += Number(g.cloturee || 0);
+  
+      return `
+          <tr>
+              <td><strong>${escapeHtml(g.dimension)}</strong></td>
+              <td class="num">${g.total}</td>
+              <td class="num">${g.enCreation}</td>
+              <td class="num">${g.retournee}</td>
+              <td class="num">${g.enCoursControle}</td>
+              <td class="num">${g.enCoursTraitement}</td>
+              <td class="num">${g.enCoursValidation}</td>
+              <td class="num">${g.enAttenteDecision}</td>
+              <td class="num">${g.enAttenteValidationDecision}</td>
+              <td class="num">${g.annulee}</td>
+              <td class="num">${g.cloturee}</td>
+          </tr>
+      `;
+  }).join("");
+  
+  tbody.innerHTML = tdb2_content 
+  $('tfoot').innerHTML= `
+  <tr>
+      <td><strong class="totale">TOTAL GLOBALE</strong></td>
+      <td class="num"><strong>${grandTotal}</strong></td>
+      <td class="num"><strong>${totalEnCreation}</strong></td>
+      <td class="num"><strong>${totalRetournee}</strong></td>
+      <td class="num"><strong>${totalEnCoursControle}</strong></td>
+      <td class="num"><strong>${totalEnCoursTraitement}</strong></td>
+      <td class="num"><strong>${totalEnCoursValidation}</strong></td>
+      <td class="num"><strong>${totalEnAttenteDecision}</strong></td>
+      <td class="num"><strong>${totalEnAttenteValidationDecision}</strong></td>
+      <td class="num"><strong>${totalAnnulee}</strong></td>
+      <td class="num"><strong>${totalCloturee}</strong></td>
+  </tr>
+  `;
   $('#tdb2Total') && ($('#tdb2Total').textContent = grandTotal);
 
   // Charts — recharger les données pour les graphiques
   const allData = await apiGet('/dashboard/demandes', currentFilters());
   renderChartEtat(allData);
   renderChartDept(allData);
+  renderTdB2AgentTable()
 }
+async function renderTdB2AgentTable() {
+  // Filtrer sur Département Domestique
+  const dim = document.querySelector('input[name="tdb2Dim"]:checked').value;
 
+  const data = await apiGet('/dashboard/demandes', { ...currentFilters(), dim });
+ const domestique = data
+ $('#dep').textContent= ($('#fDept').value || null)
+  const agents = [...new Set(domestique.map(r => r.agent).filter(Boolean))].sort();
+
+  const tbody = $('#tdb2AgentTable tbody');
+  tbody.innerHTML = '';
+
+  // Totaux cumulés
+  const totals = {
+    total: 0, creation: 0, retour: 0, controle: 0, traitement: 0,
+    validation: 0, decision: 0, vdecision: 0, annulee: 0, cloturee: 0
+  };
+  let allDelays = [];
+
+  agents.forEach(agent => {
+    const items = domestique.filter(r => r.agent === agent);
+    const total = items.length;
+    const count = (e) => items.filter(r => r.etat === e).length;
+
+    const cCreation  = count("EN_CREATION");
+    const cRetour    = count("RETOURNEE");
+    const cControle  = count("EN_COURS_CONTROLE");
+    const cTraitement = count("EN_COURS_TRAITEMENT");
+    const cValidation = count("EN_COURS_VALIDATION");
+    const cDecision  = count("EN_ATTENTE_DECISION");
+    const cVDecision = count("EN_ATTENTE_VALIDATION_DECISION");
+    const cAnnulee   = count("ANNULEE");
+    const cCloturee  = count("CLOTUREE");
+
+    totals.total      += total;
+    totals.creation   += cCreation;
+    totals.retour     += cRetour;
+    totals.controle   += cControle;
+    totals.traitement += cTraitement;
+    totals.validation += cValidation;
+    totals.decision   += cDecision;
+    totals.vdecision  += cVDecision;
+    totals.annulee    += cAnnulee;
+    totals.cloturee   += cCloturee;
+
+    // Calcul des délais
+    const delays = items.map(r => r.delaiTraitement || 0).filter(d => d > 0);
+    console.log(delays)
+    const dMoy = delays.length ? (delays.reduce((a, b) => a + b, 0) / delays.length).toFixed(1) : "—";
+    const dMax = delays.length ? Math.max(...delays) : "—";
+    const dMin = delays.length ? Math.min(...delays) : "—";
+    if (delays.length) allDelays = allDelays.concat(delays);
+
+    // Couleur délai moyen (SLA = 2 jours)
+    const dMoyNum = parseFloat(dMoy);
+    const delaiCls = isNaN(dMoyNum) ? "" : (dMoyNum <= 2 ? "delai-ok" : "delai-ko");
+
+    tbody.insertAdjacentHTML("beforeend", `
+      <tr>
+      <td><strong>${escapeHtml(agent[0].toUpperCase() + agent.slice(1))}</strong></td>
+      <td>${total}</td>
+        <td>${cCreation}</td>
+        <td>${cRetour}</td>
+        <td>${cControle}</td>
+        <td>${cTraitement}</td>
+        <td>${cValidation}</td>
+        <td>${cDecision}</td>
+        <td>${cVDecision}</td>
+        <td>${cAnnulee}</td>
+        <td>${cCloturee}</td>
+        <td class="col-delai ${delaiCls}">${dMoy}${isNaN(dMoyNum) ? "" : " j"}</td>
+        <td class="col-delai">${dMax}${dMax === "—" ? "" : " j"}</td>
+        <td class="col-delai">${dMin}${dMin === "—" ? "" : " j"}</td>
+      </tr>
+    `);
+  });
+
+  // Ligne TOTAL GLOBALE
+  $('#tdb2AgentCount').textContent = agents.length + " agent(s)";
+  $('#tdb2AgentTotal').innerHTML = `<strong>${totals.total}</strong>`;
+  $('#tdb2AgTotCreation').textContent   = totals.creation;
+  $('#tdb2AgTotRetour').textContent     = totals.retour;
+  $('#tdb2AgTotControle').textContent   = totals.controle;
+  $('#tdb2AgTotTraitement').textContent = totals.traitement;
+  $('#tdb2AgTotValidation').textContent = totals.validation;
+  $('#tdb2AgTotDecision').textContent   = totals.decision;
+  $('#tdb2AgTotVDecision').textContent  = totals.vdecision;
+  $('#tdb2AgTotAnnulee').textContent    = totals.annulee;
+  $('#tdb2AgTotCloturee').textContent   = totals.cloturee;
+
+  if (allDelays.length) {
+    const moy = (allDelays.reduce((a, b) => a + b, 0) / allDelays.length).toFixed(1);
+    const max = Math.max(...allDelays);
+    const min = Math.min(...allDelays);
+    const moyNum = parseFloat(moy);
+    const cls = moyNum <= 2 ? "delai-ok" : "delai-ko";
+    $('#tdb2AgentDelaiMoy').innerHTML = `<span class="${cls}">${moy} j</span>`;
+    $('#tdb2AgentDelaiMax').textContent = max + " j";
+    $('#tdb2AgentDelaiMin').textContent = min + " j";
+  } else {
+    $('#tdb2AgentDelaiMoy').textContent = "—";
+    $('#tdb2AgentDelaiMax').textContent = "—";
+    $('#tdb2AgentDelaiMin').textContent = "—";
+  }
+}
 function renderChartEtat(data) {
   const counts = {};
   data.forEach(r => { counts[r.etat] = (counts[r.etat] || 0) + 1; });
@@ -343,6 +486,58 @@ function renderChartEtat(data) {
       responsive: true, maintainAspectRatio: false,
       plugins: { legend: { position: "right", labels: { boxWidth: 10, font: { size: 11 } } } }
     }
+  });
+}
+function renderChartSla(data) {
+
+  const counts = {
+      "Dans SLA": 0,
+      "Hors SLA": 0
+  };
+
+  data.forEach(r => {
+      if (r.slaOk) {
+          counts["Dans SLA"]++;
+      } else {
+          counts["Hors SLA"]++;
+      }
+  });
+
+  const labels = Object.keys(counts);
+  const values = Object.values(counts);
+
+  const colors = [
+      "#2e7d32", // Vert = Dans SLA
+      "#c62828"  // Rouge = Hors SLA
+  ];
+
+  if (chartSla) chartSla.destroy();
+
+  chartSla = new Chart($("#chartSla"), {
+      type: "doughnut",
+      data: {
+          labels: labels,
+          datasets: [{
+              data: values,
+              backgroundColor: colors,
+              borderWidth: 0
+          }]
+      },
+      options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+              legend: {
+                  position: "right",
+                  labels: {
+                      boxWidth: 12,
+                      font: {
+                          size: 11
+                      }
+                  }
+              }
+          }
+      }
   });
 }
 
@@ -371,6 +566,9 @@ async function loadTdB3() {
   const tbody = $('#tdb3Table tbody');
   try {
     const data = await apiGet('/dashboard/sla', currentFilters());
+    const allData = await apiGet('/dashboard/demandes', currentFilters());
+    renderChartSla(allData);
+
     if (!data.length) {
       tbody.innerHTML = `<tr><td colspan="22" style="text-align:center;padding:30px;color:var(--c-text-3);">Aucune donnée</td></tr>`;
       return;
@@ -493,8 +691,11 @@ async function loadResp() {
   if (chartDelaiGlobal) chartDelaiGlobal.destroy();
   chartDelaiGlobal = new Chart($('#chartDelaiGlobal'), {
     type: "line",
-    data: { labels: months, datasets: [{ label: "Délai global (j)", data: delais,
-      borderColor: "#c9a227", backgroundColor: "rgba(201,162,39,.12)", fill: true, tension: .35 }] },
+    data: { labels: productivite.map(p => p.agent),
+      datasets: [
+        { label: "Mois 1", data: productivite.map(p => p.mois1), backgroundColor: "#1d5fa8", borderRadius: 4 },
+        { label: "Mois 2", data: productivite.map(p => p.mois2), backgroundColor: "#c9a227", borderRadius: 4 }
+      ]},
     options: { responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: { y: { beginAtZero: false, grid: { color: "rgba(0,0,0,.05)" } }, x: { grid: { display: false } } } }
@@ -627,6 +828,38 @@ const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
   $('#btnRefresh').addEventListener('click', refreshCurrentView);
   $$('input[name="tdb2Dim"]').forEach(r =>
     r.addEventListener('change', () => currentView === 'tdb2' && loadTdB2()));
+    $$('.nav-item').forEach(n => n.addEventListener('click', e => {
+      e.preventDefault();
+      activateView(n.dataset.view);
+    }));
+  
+    // ====== NOUVEAU : Toggle sidebar ======
+    $('#btnToggleSidebar').addEventListener('click', () => {
+      document.body.classList.toggle('sidebar-collapsed');
+      document.querySelector('.app').classList.toggle('sidebar-collapsed');
+      // Mémoriser l'état dans localStorage
+      const collapsed = document.querySelector('.app').classList.contains('sidebar-collapsed');
+      localStorage.setItem('sidebar-collapsed', collapsed);
+    });
+  
+    // Restaurer l'état au chargement
+    if (localStorage.getItem('sidebar-collapsed') === 'true') {
+      document.body.classList.add('sidebar-collapsed');
+      document.querySelector('.app').classList.add('sidebar-collapsed');
+    }
+  
+    // Sur mobile : fermer la sidebar en cliquant sur un lien
+    $$('.nav-item').forEach(n => n.addEventListener('click', () => {
+      if (window.innerWidth <= 960) {
+        document.querySelector('.app').classList.remove('sidebar-collapsed');
+        document.body.classList.remove('sidebar-collapsed');
+      }
+    }));
+  
+    $('#btnFilters').addEventListener('click', () => $('.sidebar').classList.toggle('open'));
+    $('#btnRefresh').addEventListener('click', refreshCurrentView);
+    $$('input[name="tdb2Dim"]').forEach(r =>
+      r.addEventListener('change', () => currentView === 'tdb2' && loadTdB2()));
 }
 
 /* -----------------------------------------------------------

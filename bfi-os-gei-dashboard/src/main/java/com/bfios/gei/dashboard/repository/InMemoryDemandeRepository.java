@@ -131,7 +131,7 @@ public class InMemoryDemandeRepository {
 
         save(new DemandeGei("200000036", Departement.DOMESTIQUE, "Mouvement de Fonds", "Virement Unitaire (RTGS, Virement normal)",
                 "0011001", "Intitulé 17", true, LocalDate.of(2026, 4, 14),
-                EtatDemande.ANNULLEE, EtapeWorkflow.HORS_WORKFLOW, 1, Canal.PHYSIQUE,
+                EtatDemande.ANNULEE, EtapeWorkflow.HORS_WORKFLOW, 1, Canal.PHYSIQUE,
                 "CA-01", "Agent 3", 1, true));
 
         save(new DemandeGei("200000035", Departement.CREDITS, "Gestion de compte (Crédits)", "Fusion en intérêt",
