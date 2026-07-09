@@ -13,7 +13,7 @@ public enum EtatDemande {
     EN_ATTENTE_DECISION("EN ATTENTE DE DÉCISION", "decision"),
     EN_ATTENTE_VALIDATION_DECISION("EN ATTENTE DE VALIDATION DÉCISION", "vdecision"),
     ANNULEE("ANNULÉE", "annulee"),
-    CLOTUREE("CLÔTURÉE", "cloturee"), ANNULLEE(null, null);
+    CLOTUREE("CLÔTURÉE", "cloturee");
 
     private final String libelle;
     private final String badgeKey;

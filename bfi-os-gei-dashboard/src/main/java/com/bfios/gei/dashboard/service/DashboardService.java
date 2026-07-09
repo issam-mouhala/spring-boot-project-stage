@@ -99,7 +99,7 @@ public class DashboardService {
         int total = data.size();
         int cloturees = (int) data.stream().filter(d -> d.getEtat() == EtatDemande.CLOTUREE).count();
         int enCours = (int) data.stream().filter(d -> d.getEtat().isEnCours()).count();
-        int annulees = (int) data.stream().filter(d -> d.getEtat() == EtatDemande.ANNULLEE).count();
+        int annulees = (int) data.stream().filter(d -> d.getEtat() == EtatDemande.ANNULEE).count();
         int slaOk = (int) data.stream().filter(DemandeGei::isSlaOk).count();
         int slaPct = total > 0 ? (int) Math.round((double) slaOk / total * 100) : 0;
         double delaiMoy = total > 0
@@ -175,7 +175,7 @@ public class DashboardService {
     }
 
     private double pseudoRandom(String seed, int salt) {
-        return ((Math.abs(seed.hashCode() + salt * 31) % 100) / 100.0);
+        return ((Math.abs(seed.hashCode() + salt * 30) % 100) / 100.0);
     }
 
     private double round2(double v) { return Math.round(v * 100) / 100.0; }

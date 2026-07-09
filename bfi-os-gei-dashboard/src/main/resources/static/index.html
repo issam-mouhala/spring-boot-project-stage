@@ -16,7 +16,10 @@
   <body>
     <div class="app">
       <!-- ============ SIDEBAR ============ -->
+    
+    
       <aside class="sidebar">
+
         <div class="brand">
           <div class="brand-logo">
             <img src="./img/bp.png" alt="" width="30">
@@ -37,24 +40,24 @@
               <span class="nav-ico">②</span> TdB2 — Synthèse
             </a>
              
-           <!-- <a href="#" class="nav-item" data-view="tdb3">
+           <a href="#" class="nav-item" data-view="tdb3">
               <span class="nav-ico">③</span> TdB3 — SLAs
             </a>
-            <a href="#" class="nav-item" data-view="tdb4">
+          <a href="#" class="nav-item" data-view="tdb4">
               <span class="nav-ico">④</span> TdB4 — CA / Senior Banker
             </a>
           </div>
-          <div class="nav-group">
+           <div class="nav-group">
             <span class="nav-group-label">Visions consolidées</span>
             <a href="#" class="nav-item" data-view="resp">
               <span class="nav-ico"></span> Responsable A
             </a>
-            <a href="#" class="nav-item" data-view="coverage">
+          <!--  <a href="#" class="nav-item" data-view="coverage">
               <span class="nav-ico"></span> Coverage GE
             </a>
             <a href="#" class="nav-item" data-view="dg">
               <span class="nav-ico"></span> Direction Générale
-            </a> -->
+            </a>   -->
           </div>
         </nav> 
 
@@ -74,6 +77,9 @@
         <header class="topbar">
           <div class="topbar-left">
             <button id="btnFilters" class="btn-ghost" aria-label="Filtres">
+              <span class="hamb"></span>
+            </button>
+            <button id="btnToggleSidebar" class="btn-ghost" aria-label="Basculer la sidebar" title="Afficher/Masquer le menu">
               <span class="hamb"></span>
             </button>
             <div>
@@ -247,8 +253,7 @@
                       <th>Itér.</th>
                       <th>Canal</th>
                       <th>Délai</th>  
-                                          <th>montant</th>
-
+                      <th>montant</th>
                       <th>Analyse délai</th>
                     </tr>
                   </thead>
@@ -309,10 +314,60 @@
                     <tr>
                       <td colspan="11" class="loading">Chargement…</td>
                     </tr>
+                  
                   </tbody>
+                  <tfoot></tfoot>
                 </table>
               </div>
             </div>
+            <!-- Tableau de suivi par agent — design épuré -->
+<div class="card">
+  <div class="card-header">
+    <h3>Suivi par agent — Département <span id="dep">-</span></h3>
+    <span class="badge badge-muted" id="tdb2AgentCount">0 agent(s)</span>
+  </div>
+  <div class="table-wrap">
+    <table class="data-table agent-table" id="tdb2AgentTable">
+      <thead>
+        <tr>
+          <th>Agent</th>
+          <th>Total traité</th>
+          <th>En création</th>
+          <th>Retournée</th>
+          <th>En cours contrôle</th>
+          <th>En cours traitement</th>
+          <th>En cours validation</th>
+          <th>En attente décision</th>
+          <th>En attente validation déc.</th>
+          <th>Annulée</th>
+          <th>Clôturée</th>
+          <th>Délai Moyen</th>
+          <th>Délai Max</th>
+          <th>Délai Min</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+      <tfoot>
+        <tr>
+          <td><strong class="totale">TOTAL GLOBALE</strong></td>
+          <td id="tdb2AgentTotal" class="num"><strong>0</strong></td>
+          <td id="tdb2AgTotCreation" class="num"></td>
+          <td id="tdb2AgTotRetour" class="num"></td>
+          <td id="tdb2AgTotControle" class="num"></td>
+          <td id="tdb2AgTotTraitement" class="num"></td>
+          <td id="tdb2AgTotValidation" class="num"></td>
+          <td id="tdb2AgTotDecision" class="num"></td>
+          <td id="tdb2AgTotVDecision" class="num"></td>
+          <td id="tdb2AgTotAnnulee" class="num"></td>
+          <td id="tdb2AgTotCloturee" class="num"></td>
+          <td id="tdb2AgentDelaiMoy" class="num"></td>
+          <td id="tdb2AgentDelaiMax" class="num"></td>
+          <td id="tdb2AgentDelaiMin" class="num"></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
             <div class="grid-2">
               <div class="card">
                 <div class="card-header"><h3>Répartition par état</h3></div>
@@ -387,6 +442,13 @@
                     </tr>
                   </tbody>
                 </table>
+              </div>
+              <div class="grid-2 chart3">
+                <div class="card">
+                  <div class="card-header"><h3>Répartition par Sla</h3></div>
+                  <div class="chart-box"><canvas id="chartSla"></canvas></div>
+                </div>
+               
               </div>
             </div>
           </div>
