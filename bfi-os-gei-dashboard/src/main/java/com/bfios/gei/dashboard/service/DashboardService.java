@@ -190,6 +190,9 @@ public class DashboardService {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
                         (a, b) -> a, LinkedHashMap::new));
     }
+    public List<Object[]> getGroupedDepartement() {
+        return repository.getDep();
+    }
 
     // ============================================================
     //  Vision DG

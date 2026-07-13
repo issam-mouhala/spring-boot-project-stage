@@ -708,8 +708,13 @@ async function loadResp() {
 let chartCoverage;
 async function loadCoverage() {
   const data = await apiGet('/dashboard/demandes', {});
-  const depts = [...new Set(data.map(r => r.departement))];
+  console.log("🚀 ~ loadCoverage ~ depts:", depts)
+  
+  console.log('dept = ',depts)
+
   const coverage = depts.map(d => 70 + Math.round(Math.random() * 25));
+  
+
   const delais = depts.map(d => {
     const subset = data.filter(r => r.departement === d);
     return subset.length ? +(subset.reduce((a,r) => a + r.delaiTraitement, 0)/subset.length).toFixed(1) : 0;

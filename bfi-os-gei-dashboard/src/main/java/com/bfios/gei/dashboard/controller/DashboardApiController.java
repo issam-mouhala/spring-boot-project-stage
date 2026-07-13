@@ -71,6 +71,10 @@ public class DashboardApiController {
         FiltreDto f = buildFiltre(dept, nat, prod, etat, etape, canal, fastTrack, search,dateDebut,dateFin);
         return dashboardService.findFiltered(f);
     }
+    @GetMapping("/departementGrouped")
+    public List<Object[]> departementGrouped() {
+        return  dashboardService.getGroupedDepartement();
+    }
 
     // ===== KPIs (hero) =====
     @GetMapping("/kpis")
