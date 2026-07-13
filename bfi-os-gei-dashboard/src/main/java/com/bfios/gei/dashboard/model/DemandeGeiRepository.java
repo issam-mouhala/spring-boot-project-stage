@@ -54,6 +54,6 @@ public interface DemandeGeiRepository extends JpaRepository<DemandeGei, String> 
                                    @Param("etat") EtatDemande etat,
                                    @Param("dateDebut") LocalDate dateDebut,
                                    @Param("dateFin") LocalDate dateFin);
-   @Query("select departement,count(*) dep from DemandeGei group by departement")
+   @Query("select departement,count(*) dep,sum(delaiTraitement) delai from DemandeGei group by departement")
    List<Object[]> getDep();
 }

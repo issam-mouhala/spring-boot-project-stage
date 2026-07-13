@@ -8,20 +8,20 @@ const API = '/api';
 /* -----------------------------------------------------------
    1. UI HELPERS
    ----------------------------------------------------------- */
-const $  = (s, c = document) => c.querySelector(s);
+const $ = (s, c = document) => c.querySelector(s);
 const $$ = (s, c = document) => Array.from(c.querySelectorAll(s));
 
 function escapeHtml(str) {
   if (str == null) return '';
   return String(str).replace(/[&<>"']/g, c =>
-    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])
   );
 }
 
 function fmtDate(iso) {
   if (!iso) return '';
   const d = new Date(iso);
-  return d.toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'numeric' });
+  return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
 function etatBadgeClass(etat) {
@@ -90,17 +90,17 @@ async function apiGet(path, params = {}) {
 
 // === Mapping période → plage de dates ===
 const PERIODS = {
-  "Avril 2026":      { start: "2026-04-01", end: "2026-04-30" },
-  "Mars 2026":       { start: "2026-03-01", end: "2026-03-31" },
-  "Février 2026":    { start: "2026-02-01", end: "2026-02-28" },
-  "Q1 2026":         { start: "2026-01-01", end: "2026-03-31" },
-  "Année 2026":      { start: "2026-01-01", end: "2026-12-31" }
+  "Avril 2026": { start: "2026-04-01", end: "2026-04-30" },
+  "Mars 2026": { start: "2026-03-01", end: "2026-03-31" },
+  "Février 2026": { start: "2026-02-01", end: "2026-02-28" },
+  "Q1 2026": { start: "2026-01-01", end: "2026-03-31" },
+  "Année 2026": { start: "2026-01-01", end: "2026-12-31" }
 };
 $('#dateDebut').value = '12-04-2026';
 
 const currentFilters = () => ({
   dept: $('#fDept').value || null,
-  nat:  $('#fNat').value || null,
+  nat: $('#fNat').value || null,
   prod: $('#fProd').value || null,
   etat: $('#fEtat').value || null,
   etape: $('#fEtape').value || null,
@@ -109,7 +109,7 @@ const currentFilters = () => ({
   search: $('#fSearch').value.trim() || null,
   // NOUVEAU : envoyer les dates au backend
   dateDebut: $('#dateDebut').value || null,
-  dateFin:   $('#dateFin').value   || null
+  dateFin: $('#dateFin').value || null
 });
 /* -----------------------------------------------------------
    4. POPULATE FILTERS — charge les référentiels au démarrage
@@ -121,13 +121,14 @@ async function populateFilters() {
     const opt = document.createElement('option');
     opt.value = d; opt.textContent = d.charAt(0) + d.slice(1).toLowerCase();
     $('#fDept').appendChild(opt);
-      // NOUVEAU : listeners pour les date pickers
-  $('#dateDebut').addEventListener('change', refreshCurrentView);
-  $('#dateFin').addEventListener('change', refreshCurrentView);
-  $('#periodReset').addEventListener('click', () => {
-    $('#dateDebut').value = '';
-    $('#dateFin').value = '';
-    refreshCurrentView();  });
+    // NOUVEAU : listeners pour les date pickers
+    $('#dateDebut').addEventListener('change', refreshCurrentView);
+    $('#dateFin').addEventListener('change', refreshCurrentView);
+    $('#periodReset').addEventListener('click', () => {
+      $('#dateDebut').value = '';
+      $('#dateFin').value = '';
+      refreshCurrentView();
+    });
   });
 
   // États
@@ -188,7 +189,7 @@ async function populateFilters() {
   });
 
   $('#resetFilters').addEventListener('click', () => {
-    ['#fDept','#fNat','#fProd','#fEtat','#fEtape','#fCanal','#fFastTrack','#fSearch'].forEach(s => {
+    ['#fDept', '#fNat', '#fProd', '#fEtat', '#fEtape', '#fCanal', '#fFastTrack', '#fSearch'].forEach(s => {
       $(s).value = '';
       if (s === '#fNat' || s === '#fProd') $(s).disabled = true;
     });
@@ -201,12 +202,12 @@ async function populateFilters() {
    ----------------------------------------------------------- */
 const VIEW_META = {
   tdb1: { title: 'TdB1 — Demandes détaillées', sub: 'Pilotage & suivi de l\'activité BFI-OS GEI (détaillé par demande)' },
-  tdb2: { title: 'TdB2 — Synthèse',            sub: 'Suivi du stock des demandes par département, par statut, par nature ou par produit' },
-  tdb3: { title: 'TdB3 — SLAs',                sub: 'SLAs paramétrés par étape du processus et temps de traitement réel' },
-  tdb4: { title: 'TdB4 — CA / Senior Banker',  sub: 'Vue détaillée par demande pour Chargés d\'affaires, Senior banker, Resp MO, DGEI' },
-  resp: { title: 'Vision Responsable A',       sub: 'Activité clients et productivité des agents (variations sur période)' },
+  tdb2: { title: 'TdB2 — Synthèse', sub: 'Suivi du stock des demandes par département, par statut, par nature ou par produit' },
+  tdb3: { title: 'TdB3 — SLAs', sub: 'SLAs paramétrés par étape du processus et temps de traitement réel' },
+  tdb4: { title: 'TdB4 — CA / Senior Banker', sub: 'Vue détaillée par demande pour Chargés d\'affaires, Senior banker, Resp MO, DGEI' },
+  resp: { title: 'Vision Responsable A', sub: 'Activité clients et productivité des agents (variations sur période)' },
   coverage: { title: 'Vision consolidée Coverage GE', sub: 'Couverture clients et délais par département' },
-  dg: { title: 'Vision consolidée DG',         sub: 'Vue globale pour la Direction Générale' }
+  dg: { title: 'Vision consolidée DG', sub: 'Vue globale pour la Direction Générale' }
 };
 
 let currentView = 'tdb1';
@@ -220,7 +221,7 @@ function activateView(view) {
   $('#viewSub').textContent = meta.sub;
 
   $('#kpiRow').style.display = (view === 'tdb1' || view === 'tdb4') ? '' : 'none';
-  $('#filtersBar').style.display = ['tdb1','tdb2','tdb3','tdb4','resp'].includes(view) ? '' : 'none';
+  $('#filtersBar').style.display = ['tdb1', 'tdb2', 'tdb3', 'tdb4', 'resp'].includes(view) ? '' : 'none';
 
   refreshCurrentView();
 }
@@ -243,12 +244,12 @@ function refreshCurrentView() {
 async function loadKpis() {
   try {
     const k = await apiGet('/dashboard/kpis', currentFilters());
-    $('#kpiTotal').textContent     = k.total;
+    $('#kpiTotal').textContent = k.total;
     $('#kpiCloturees').textContent = k.cloturees;
-    $('#kpiEnCours').textContent   = k.enCours;
-    $('#kpiAnnulees').textContent  = k.annulees;
-    $('#kpiSla').textContent       = k.slaPct + '%';
-    $('#kpiDelai').textContent     = k.delaiMoyen + ' j';
+    $('#kpiEnCours').textContent = k.enCours;
+    $('#kpiAnnulees').textContent = k.annulees;
+    $('#kpiSla').textContent = k.slaPct + '%';
+    $('#kpiDelai').textContent = k.delaiMoyen + ' j';
   } catch (e) { console.error('KPIs:', e); }
 }
 
@@ -266,8 +267,8 @@ async function loadTdB1() {
     }
     const totalMontant = data.reduce((sum, r) => sum + r.montant, 0);
 
-    $('#kpiMontant').textContent   = totalMontant + ' DH'
-        tbody.innerHTML = data.map(r => `
+    $('#kpiMontant').textContent = totalMontant + ' DH'
+    tbody.innerHTML = data.map(r => `
       <tr>
         <td class="num">${escapeHtml(r.numDemande)}</td>
         <td>${escapeHtml(r.agent)}</td>
@@ -285,8 +286,8 @@ async function loadTdB1() {
         <td class="num">${r.delaiTraitement} j</td>
         <td class="num">${r.montant} DH</td>
         <td>${r.slaOk
-          ? '<span class="badge" style="background:var(--c-green-soft);color:var(--c-green)">Dans les délais</span>'
-          : '<span class="badge" style="background:var(--c-red-soft);color:var(--c-red)">Hors délais</span>'}</td>
+        ? '<span class="badge" style="background:var(--c-green-soft);color:var(--c-green)">Dans les délais</span>'
+        : '<span class="badge" style="background:var(--c-red-soft);color:var(--c-red)">Hors délais</span>'}</td>
       </tr>
     `).join('');
   } catch (e) {
@@ -297,7 +298,7 @@ async function loadTdB1() {
 /* -----------------------------------------------------------
    8. TdB2 — Synthèse
    ----------------------------------------------------------- */
-let chartEtat,chartSla, chartDept;
+let chartEtat, chartSla, chartDept;
 async function loadTdB2() {
   const dim = document.querySelector('input[name="tdb2Dim"]:checked').value;
   const data = await apiGet('/dashboard/synthese', { ...currentFilters(), dim });
@@ -312,21 +313,21 @@ async function loadTdB2() {
   let totalEnAttenteValidationDecision = 0;
   let totalAnnulee = 0;
   let totalCloturee = 0;
-  
+
   const tdb2_content = data.map(g => {
-  
-      grandTotal += Number(g.total || 0);
-      totalEnCreation += Number(g.enCreation || 0);
-      totalRetournee += Number(g.retournee || 0);
-      totalEnCoursControle += Number(g.enCoursControle || 0);
-      totalEnCoursTraitement += Number(g.enCoursTraitement || 0);
-      totalEnCoursValidation += Number(g.enCoursValidation || 0);
-      totalEnAttenteDecision += Number(g.enAttenteDecision || 0);
-      totalEnAttenteValidationDecision += Number(g.enAttenteValidationDecision || 0);
-      totalAnnulee += Number(g.annulee || 0);
-      totalCloturee += Number(g.cloturee || 0);
-  
-      return `
+
+    grandTotal += Number(g.total || 0);
+    totalEnCreation += Number(g.enCreation || 0);
+    totalRetournee += Number(g.retournee || 0);
+    totalEnCoursControle += Number(g.enCoursControle || 0);
+    totalEnCoursTraitement += Number(g.enCoursTraitement || 0);
+    totalEnCoursValidation += Number(g.enCoursValidation || 0);
+    totalEnAttenteDecision += Number(g.enAttenteDecision || 0);
+    totalEnAttenteValidationDecision += Number(g.enAttenteValidationDecision || 0);
+    totalAnnulee += Number(g.annulee || 0);
+    totalCloturee += Number(g.cloturee || 0);
+
+    return `
           <tr>
               <td><strong>${escapeHtml(g.dimension)}</strong></td>
               <td class="num">${g.total}</td>
@@ -342,9 +343,9 @@ async function loadTdB2() {
           </tr>
       `;
   }).join("");
-  
-  tbody.innerHTML = tdb2_content 
-  $('tfoot').innerHTML= `
+
+  tbody.innerHTML = tdb2_content
+  $('tfoot').innerHTML = `
   <tr>
       <td><strong class="totale">TOTAL GLOBALE</strong></td>
       <td class="num"><strong>${grandTotal}</strong></td>
@@ -372,8 +373,8 @@ async function renderTdB2AgentTable() {
   const dim = document.querySelector('input[name="tdb2Dim"]:checked').value;
 
   const data = await apiGet('/dashboard/demandes', { ...currentFilters(), dim });
- const domestique = data
- $('#dep').textContent= ($('#fDept').value || null)
+  const domestique = data
+  $('#dep').textContent = ($('#fDept').value || null)
   const agents = [...new Set(domestique.map(r => r.agent).filter(Boolean))].sort();
 
   const tbody = $('#tdb2AgentTable tbody');
@@ -391,30 +392,29 @@ async function renderTdB2AgentTable() {
     const total = items.length;
     const count = (e) => items.filter(r => r.etat === e).length;
 
-    const cCreation  = count("EN_CREATION");
-    const cRetour    = count("RETOURNEE");
-    const cControle  = count("EN_COURS_CONTROLE");
+    const cCreation = count("EN_CREATION");
+    const cRetour = count("RETOURNEE");
+    const cControle = count("EN_COURS_CONTROLE");
     const cTraitement = count("EN_COURS_TRAITEMENT");
     const cValidation = count("EN_COURS_VALIDATION");
-    const cDecision  = count("EN_ATTENTE_DECISION");
+    const cDecision = count("EN_ATTENTE_DECISION");
     const cVDecision = count("EN_ATTENTE_VALIDATION_DECISION");
-    const cAnnulee   = count("ANNULEE");
-    const cCloturee  = count("CLOTUREE");
+    const cAnnulee = count("ANNULEE");
+    const cCloturee = count("CLOTUREE");
 
-    totals.total      += total;
-    totals.creation   += cCreation;
-    totals.retour     += cRetour;
-    totals.controle   += cControle;
+    totals.total += total;
+    totals.creation += cCreation;
+    totals.retour += cRetour;
+    totals.controle += cControle;
     totals.traitement += cTraitement;
     totals.validation += cValidation;
-    totals.decision   += cDecision;
-    totals.vdecision  += cVDecision;
-    totals.annulee    += cAnnulee;
-    totals.cloturee   += cCloturee;
+    totals.decision += cDecision;
+    totals.vdecision += cVDecision;
+    totals.annulee += cAnnulee;
+    totals.cloturee += cCloturee;
 
     // Calcul des délais
     const delays = items.map(r => r.delaiTraitement || 0).filter(d => d > 0);
-    console.log(delays)
     const dMoy = delays.length ? (delays.reduce((a, b) => a + b, 0) / delays.length).toFixed(1) : "—";
     const dMax = delays.length ? Math.max(...delays) : "—";
     const dMin = delays.length ? Math.min(...delays) : "—";
@@ -447,15 +447,15 @@ async function renderTdB2AgentTable() {
   // Ligne TOTAL GLOBALE
   $('#tdb2AgentCount').textContent = agents.length + " agent(s)";
   $('#tdb2AgentTotal').innerHTML = `<strong>${totals.total}</strong>`;
-  $('#tdb2AgTotCreation').textContent   = totals.creation;
-  $('#tdb2AgTotRetour').textContent     = totals.retour;
-  $('#tdb2AgTotControle').textContent   = totals.controle;
+  $('#tdb2AgTotCreation').textContent = totals.creation;
+  $('#tdb2AgTotRetour').textContent = totals.retour;
+  $('#tdb2AgTotControle').textContent = totals.controle;
   $('#tdb2AgTotTraitement').textContent = totals.traitement;
   $('#tdb2AgTotValidation').textContent = totals.validation;
-  $('#tdb2AgTotDecision').textContent   = totals.decision;
-  $('#tdb2AgTotVDecision').textContent  = totals.vdecision;
-  $('#tdb2AgTotAnnulee').textContent    = totals.annulee;
-  $('#tdb2AgTotCloturee').textContent   = totals.cloturee;
+  $('#tdb2AgTotDecision').textContent = totals.decision;
+  $('#tdb2AgTotVDecision').textContent = totals.vdecision;
+  $('#tdb2AgTotAnnulee').textContent = totals.annulee;
+  $('#tdb2AgTotCloturee').textContent = totals.cloturee;
 
   if (allDelays.length) {
     const moy = (allDelays.reduce((a, b) => a + b, 0) / allDelays.length).toFixed(1);
@@ -477,7 +477,7 @@ function renderChartEtat(data) {
   data.forEach(r => { counts[r.etat] = (counts[r.etat] || 0) + 1; });
   const labels = Object.keys(counts).map(etatLibelle);
   const values = Object.values(counts);
-  const colors = ["#1976d2","#f59f00","#6b46a1","#1976d2","#6b46a1","#f59f00","#f59f00","#c62828","#2e7d32"];
+  const colors = ["#1976d2", "#f59f00", "#6b46a1", "#1976d2", "#6b46a1", "#f59f00", "#f59f00", "#c62828", "#2e7d32"];
   if (chartEtat) chartEtat.destroy();
   chartEtat = new Chart($('#chartEtat'), {
     type: "doughnut",
@@ -491,53 +491,53 @@ function renderChartEtat(data) {
 function renderChartSla(data) {
 
   const counts = {
-      "Dans SLA": 0,
-      "Hors SLA": 0
+    "Dans SLA": 0,
+    "Hors SLA": 0
   };
 
   data.forEach(r => {
-      if (r.slaOk) {
-          counts["Dans SLA"]++;
-      } else {
-          counts["Hors SLA"]++;
-      }
+    if (r.slaOk) {
+      counts["Dans SLA"]++;
+    } else {
+      counts["Hors SLA"]++;
+    }
   });
 
   const labels = Object.keys(counts);
   const values = Object.values(counts);
 
   const colors = [
-      "#2e7d32", // Vert = Dans SLA
-      "#c62828"  // Rouge = Hors SLA
+    "#2e7d32", // Vert = Dans SLA
+    "#c62828"  // Rouge = Hors SLA
   ];
 
   if (chartSla) chartSla.destroy();
 
   chartSla = new Chart($("#chartSla"), {
-      type: "doughnut",
-      data: {
-          labels: labels,
-          datasets: [{
-              data: values,
-              backgroundColor: colors,
-              borderWidth: 0
-          }]
-      },
-      options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-              legend: {
-                  position: "right",
-                  labels: {
-                      boxWidth: 12,
-                      font: {
-                          size: 11
-                      }
-                  }
-              }
+    type: "doughnut",
+    data: {
+      labels: labels,
+      datasets: [{
+        data: values,
+        backgroundColor: colors,
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: "right",
+          labels: {
+            boxWidth: 12,
+            font: {
+              size: 11
+            }
           }
+        }
       }
+    }
   });
 }
 
@@ -549,8 +549,12 @@ function renderChartDept(data) {
   if (chartDept) chartDept.destroy();
   chartDept = new Chart($('#chartDept'), {
     type: "bar",
-    data: { labels, datasets: [{ label: "Demandes", data: values,
-      backgroundColor: ["#0b3b6f","#1d5fa8","#c9a227","#6b46a1"], borderRadius: 4 }] },
+    data: {
+      labels, datasets: [{
+        label: "Demandes", data: values,
+        backgroundColor: ["#0b3b6f", "#1d5fa8", "#c9a227", "#6b46a1"], borderRadius: 4
+      }]
+    },
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false } },
@@ -628,8 +632,8 @@ async function loadTdB4() {
         <td>${escapeHtml(r.agent)}</td>
         <td class="num">${r.delaiTraitement} j</td>
         <td>${r.slaOk
-          ? '<span class="badge" style="background:var(--c-green-soft);color:var(--c-green)">Dans délais</span>'
-          : '<span class="badge" style="background:var(--c-red-soft);color:var(--c-red)">Hors délais</span>'}</td>
+        ? '<span class="badge" style="background:var(--c-green-soft);color:var(--c-green)">Dans délais</span>'
+        : '<span class="badge" style="background:var(--c-red-soft);color:var(--c-red)">Hors délais</span>'}</td>
       </tr>
     `).join('');
   } catch (e) {
@@ -661,11 +665,13 @@ async function loadResp() {
   if (chartAgents) chartAgents.destroy();
   chartAgents = new Chart($('#chartAgents'), {
     type: "bar",
-    data: { labels: productivite.map(p => p.agent),
+    data: {
+      labels: productivite.map(p => p.agent),
       datasets: [
         { label: "Mois 1", data: productivite.map(p => p.mois1), backgroundColor: "#1d5fa8", borderRadius: 4 },
         { label: "Mois 2", data: productivite.map(p => p.mois2), backgroundColor: "#c9a227", borderRadius: 4 }
-      ]},
+      ]
+    },
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: { legend: { position: "top", labels: { font: { size: 11 } } } },
@@ -686,19 +692,23 @@ async function loadResp() {
     }
   });
 
-  const months = ["Jan","Fév","Mar","Avr","Mai","Juin"];
+  const months = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin"];
   const delais = [4.2, 4.0, 3.8, 3.5, 3.3, 3.2];
   if (chartDelaiGlobal) chartDelaiGlobal.destroy();
   chartDelaiGlobal = new Chart($('#chartDelaiGlobal'), {
     type: "line",
-    data: { labels: productivite.map(p => p.agent),
+    data: {
+      labels: productivite.map(p => p.agent),
       datasets: [
         { label: "Mois 1", data: productivite.map(p => p.mois1), backgroundColor: "#1d5fa8", borderRadius: 4 },
         { label: "Mois 2", data: productivite.map(p => p.mois2), backgroundColor: "#c9a227", borderRadius: 4 }
-      ]},
-    options: { responsive: true, maintainAspectRatio: false,
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false } },
-      scales: { y: { beginAtZero: false, grid: { color: "rgba(0,0,0,.05)" } }, x: { grid: { display: false } } } }
+      scales: { y: { beginAtZero: false, grid: { color: "rgba(0,0,0,.05)" } }, x: { grid: { display: false } } }
+    }
   });
 }
 
@@ -707,31 +717,31 @@ async function loadResp() {
    ----------------------------------------------------------- */
 let chartCoverage;
 async function loadCoverage() {
-  const data = await apiGet('/dashboard/demandes', {});
-  console.log("🚀 ~ loadCoverage ~ depts:", depts)
-  
-  console.log('dept = ',depts)
+  const data = await apiGet('/dashboard/departementGrouped', {});
+  const depts = data.map((a) => a[0]);
+  const total = data.reduce((sum, i) => sum + i[1], 0);
+  console.log("🚀 ~ loadCoverage ~ total:", depts)
 
-  const coverage = depts.map(d => 70 + Math.round(Math.random() * 25));
-  
+  const coverage = data.map(d => d[1] / total * 100);
 
-  const delais = depts.map(d => {
-    const subset = data.filter(r => r.departement === d);
-    return subset.length ? +(subset.reduce((a,r) => a + r.delaiTraitement, 0)/subset.length).toFixed(1) : 0;
-  });
+
+  const delais = data.map(a=>a[2]/a[1]);
   if (chartCoverage) chartCoverage.destroy();
   chartCoverage = new Chart($('#chartCoverage'), {
     type: "bar",
-    data: { labels: depts, datasets: [
-      { label: "Couverture (%)", data: coverage, backgroundColor: "#1d5fa8", borderRadius: 4, yAxisID: "y" },
-      { label: "Délai moyen (j)", data: delais, backgroundColor: "#c9a227", borderRadius: 4, yAxisID: "y1" }
-    ]},
-    options: { responsive: true, maintainAspectRatio: false,
+    data: {
+      labels: depts, datasets: [
+        { label: "Couverture (%)", data: coverage, backgroundColor: "#1d5fa8", borderRadius: 4, yAxisID: "y" },
+        { label: "Délai moyen (j)", data: delais, backgroundColor: "#c9a227", borderRadius: 4, yAxisID: "y1" }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
       plugins: { legend: { position: "top", labels: { font: { size: 11 } } } },
       scales: {
-        y:  { type: "linear", position: "left",  beginAtZero: true, max: 100, grid: { color: "rgba(0,0,0,.05)" }, title: { display: true, text: "Couverture (%)" } },
+        y: { type: "linear", position: "left", beginAtZero: true, max: 100, grid: { color: "rgba(0,0,0,.05)" }, title: { display: true, text: "Couverture (%)" } },
         y1: { type: "linear", position: "right", beginAtZero: true, grid: { drawOnChartArea: false }, title: { display: true, text: "Délai (j)" } },
-        x:  { grid: { display: false } }
+        x: { grid: { display: false } }
       }
     }
   });
@@ -745,34 +755,46 @@ async function loadDG() {
   const summary = await apiGet('/dashboard/dg/summary', {});
   const k = summary.kpis;
   const clotPct = k.total > 0 ? Math.round((k.cloturees / k.total) * 100) : 0;
-  $('#dgTotal').textContent   = k.total;
+  $('#dgTotal').textContent = k.total;
   $('#dgCloture').textContent = clotPct + '%';
-  $('#dgSla').textContent     = k.slaPct + '%';
-  $('#dgDelai').textContent   = k.delaiMoyen + ' j';
+  $('#dgSla').textContent = k.slaPct + '%';
+  $('#dgDelai').textContent = k.delaiMoyen + ' j';
 
-  const months = ["Jan","Fév","Mar","Avr","Mai","Juin"];
+  const months = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin"];
   const vols = [120, 145, 158, 167, 178, k.total || 180];
   if (chartDgVolume) chartDgVolume.destroy();
   chartDgVolume = new Chart($('#chartDgVolume'), {
     type: "line",
-    data: { labels: months, datasets: [{ label: "Volume", data: vols,
-      borderColor: "#0b3b6f", backgroundColor: "rgba(11,59,111,.1)", fill: true, tension: .35 }] },
-    options: { responsive: true, maintainAspectRatio: false,
+    data: {
+      labels: months, datasets: [{
+        label: "Volume", data: vols,
+        borderColor: "#0b3b6f", backgroundColor: "rgba(11,59,111,.1)", fill: true, tension: .35
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false } },
-      scales: { y: { beginAtZero: false, grid: { color: "rgba(0,0,0,.05)" } }, x: { grid: { display: false } } } }
+      scales: { y: { beginAtZero: false, grid: { color: "rgba(0,0,0,.05)" } }, x: { grid: { display: false } } }
+    }
   });
 
-  const {slaByDept} = summary;
+  const { slaByDept } = summary;
   const labels = Object.keys(slaByDept);
   const values = Object.values(slaByDept);
   if (chartDgSla) chartDgSla.destroy();
   chartDgSla = new Chart($('#chartDgSla'), {
     type: "bar",
-    data: { labels, datasets: [{ label: "Respect SLA (%)", data: values,
-      backgroundColor: ["#2e7d32","#1976d2","#c9a227","#6b46a1"], borderRadius: 4 }] },
-    options: { responsive: true, maintainAspectRatio: false,
+    data: {
+      labels, datasets: [{
+        label: "Respect SLA (%)", data: values,
+        backgroundColor: ["#2e7d32", "#1976d2", "#c9a227", "#6b46a1"], borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false } },
-      scales: { y: { beginAtZero: true, max: 100, grid: { color: "rgba(0,0,0,.05)" } }, x: { grid: { display: false } } } }
+      scales: { y: { beginAtZero: true, max: 100, grid: { color: "rgba(0,0,0,.05)" } }, x: { grid: { display: false } } }
+    }
   });
 
   const tbody = $('#dgTopTable tbody');
@@ -782,8 +804,8 @@ async function loadDG() {
       <td class="num">${t.volume}</td>
       <td class="num">${t.delaiMoyen} j</td>
       <td>${t.slaPct >= 80
-        ? '<span class="badge" style="background:var(--c-green-soft);color:var(--c-green)">'+t.slaPct+'%</span>'
-        : '<span class="badge" style="background:var(--c-amber-soft);color:var(--c-amber)">'+t.slaPct+'%</span>'}</td>
+      ? '<span class="badge" style="background:var(--c-green-soft);color:var(--c-green)">' + t.slaPct + '%</span>'
+      : '<span class="badge" style="background:var(--c-amber-soft);color:var(--c-amber)">' + t.slaPct + '%</span>'}</td>
       <td>
         <div class="bar-mini">
           <div class="bar-mini-fill" style="width:${t.partVolumePct}%"></div>
@@ -799,13 +821,13 @@ async function loadDG() {
    ----------------------------------------------------------- */
 $('#exportCsvTdb1') && $('#exportCsvTdb1').addEventListener('click', async () => {
   const data = await apiGet('/dashboard/demandes', currentFilters());
-  const headers = ['N° demande','Département','Nature','Produit','Radical','Client','Fast Track','Date','État','Étape','Itér','Canal','Délai','Analyse'];
+  const headers = ['N° demande', 'Département', 'Nature', 'Produit', 'Radical', 'Client', 'Fast Track', 'Date', 'État', 'Étape', 'Itér', 'Canal', 'Délai', 'Analyse'];
   const lines = [headers.join(';')];
   data.forEach(r => {
     lines.push([r.numDemande, r.departement, r.natureOperation, r.produitService,
-                r.radicalClient, r.intituleClient, r.fastTrack ? 'OUI' : 'NON',
-                r.dateDemande, r.etat, r.etape, r.nbIterations, r.canal,
-                r.delaiTraitement, r.slaOk ? 'Dans délais' : 'Hors délais'].join(';'));
+    r.radicalClient, r.intituleClient, r.fastTrack ? 'OUI' : 'NON',
+    r.dateDemande, r.etat, r.etape, r.nbIterations, r.canal,
+    r.delaiTraitement, r.slaOk ? 'Dans délais' : 'Hors délais'].join(';'));
   });
   const csv = '\uFEFF' + lines.join('\n');
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
@@ -821,10 +843,10 @@ $('#exportCsvTdb1') && $('#exportCsvTdb1').addEventListener('click', async () =>
    ----------------------------------------------------------- */
 function setupNav() {
   // Pré-remplir avec le mois courant
-const today = new Date();
-const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
- $('#dateDebut').value = firstDay.toISOString().split('T')[0];
- $('#dateFin').value = today.toISOString().split('T')[0];
+  const today = new Date();
+  const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+  $('#dateDebut').value = firstDay.toISOString().split('T')[0];
+  $('#dateFin').value = today.toISOString().split('T')[0];
   $$('.nav-item').forEach(n => n.addEventListener('click', e => {
     e.preventDefault();
     activateView(n.dataset.view);
@@ -833,38 +855,38 @@ const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
   $('#btnRefresh').addEventListener('click', refreshCurrentView);
   $$('input[name="tdb2Dim"]').forEach(r =>
     r.addEventListener('change', () => currentView === 'tdb2' && loadTdB2()));
-    $$('.nav-item').forEach(n => n.addEventListener('click', e => {
-      e.preventDefault();
-      activateView(n.dataset.view);
-    }));
-  
-    // ====== NOUVEAU : Toggle sidebar ======
-    $('#btnToggleSidebar').addEventListener('click', () => {
-      document.body.classList.toggle('sidebar-collapsed');
-      document.querySelector('.app').classList.toggle('sidebar-collapsed');
-      // Mémoriser l'état dans localStorage
-      const collapsed = document.querySelector('.app').classList.contains('sidebar-collapsed');
-      localStorage.setItem('sidebar-collapsed', collapsed);
-    });
-  
-    // Restaurer l'état au chargement
-    if (localStorage.getItem('sidebar-collapsed') === 'true') {
-      document.body.classList.add('sidebar-collapsed');
-      document.querySelector('.app').classList.add('sidebar-collapsed');
+  $$('.nav-item').forEach(n => n.addEventListener('click', e => {
+    e.preventDefault();
+    activateView(n.dataset.view);
+  }));
+
+  // ====== NOUVEAU : Toggle sidebar ======
+  $('#btnToggleSidebar').addEventListener('click', () => {
+    document.body.classList.toggle('sidebar-collapsed');
+    document.querySelector('.app').classList.toggle('sidebar-collapsed');
+    // Mémoriser l'état dans localStorage
+    const collapsed = document.querySelector('.app').classList.contains('sidebar-collapsed');
+    localStorage.setItem('sidebar-collapsed', collapsed);
+  });
+
+  // Restaurer l'état au chargement
+  if (localStorage.getItem('sidebar-collapsed') === 'true') {
+    document.body.classList.add('sidebar-collapsed');
+    document.querySelector('.app').classList.add('sidebar-collapsed');
+  }
+
+  // Sur mobile : fermer la sidebar en cliquant sur un lien
+  $$('.nav-item').forEach(n => n.addEventListener('click', () => {
+    if (window.innerWidth <= 960) {
+      document.querySelector('.app').classList.remove('sidebar-collapsed');
+      document.body.classList.remove('sidebar-collapsed');
     }
-  
-    // Sur mobile : fermer la sidebar en cliquant sur un lien
-    $$('.nav-item').forEach(n => n.addEventListener('click', () => {
-      if (window.innerWidth <= 960) {
-        document.querySelector('.app').classList.remove('sidebar-collapsed');
-        document.body.classList.remove('sidebar-collapsed');
-      }
-    }));
-  
-    $('#btnFilters').addEventListener('click', () => $('.sidebar').classList.toggle('open'));
-    $('#btnRefresh').addEventListener('click', refreshCurrentView);
-    $$('input[name="tdb2Dim"]').forEach(r =>
-      r.addEventListener('change', () => currentView === 'tdb2' && loadTdB2()));
+  }));
+
+  $('#btnFilters').addEventListener('click', () => $('.sidebar').classList.toggle('open'));
+  $('#btnRefresh').addEventListener('click', refreshCurrentView);
+  $$('input[name="tdb2Dim"]').forEach(r =>
+    r.addEventListener('change', () => currentView === 'tdb2' && loadTdB2()));
 }
 
 /* -----------------------------------------------------------
