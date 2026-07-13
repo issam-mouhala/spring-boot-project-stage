@@ -220,7 +220,7 @@ function activateView(view) {
   $('#viewSub').textContent = meta.sub;
 
   $('#kpiRow').style.display = (view === 'tdb1' || view === 'tdb4') ? '' : 'none';
-  $('#filtersBar').style.display = ['tdb1','tdb2','tdb3','tdb4'].includes(view) ? '' : 'none';
+  $('#filtersBar').style.display = ['tdb1','tdb2','tdb3','tdb4','resp'].includes(view) ? '' : 'none';
 
   refreshCurrentView();
 }
