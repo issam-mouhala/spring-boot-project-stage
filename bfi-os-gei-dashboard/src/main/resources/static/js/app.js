@@ -905,3 +905,137 @@ document.addEventListener('DOMContentLoaded', async () => {
       </div>`);
   }
 });
+const chatToggle = document.getElementById("chat-toggle");
+const chatbot = document.getElementById("chatbot");
+const closeChat = document.querySelector(".close-chat");
+
+const messages = document.getElementById("messages");
+const question = document.getElementById("question");
+const sendBtn = document.getElementById("send");
+
+/* ==========================
+   Ouvrir le chatbot
+========================== */
+
+chatToggle.addEventListener("click", () => {
+
+    if (chatbot.style.display !== "block") {
+
+        chatbot.style.display = "block";
+
+        question.focus();
+
+    }
+
+});
+
+/* ==========================
+   Fermer
+========================== */
+
+closeChat.addEventListener("click", () => {
+
+    chatbot.style.display = "none";
+
+});
+
+/* ==========================
+   Bouton envoyer
+========================== */
+
+sendBtn.addEventListener("click", sendMessage);
+
+/* ==========================
+   Touche Entrée
+========================== */
+
+question.addEventListener("keydown", function (e) {
+
+    if (e.key === "Enter") {
+
+        e.preventDefault();
+
+        sendMessage();
+
+    }
+
+});
+
+/* ==========================
+   Ajouter un message
+========================== */
+
+function addMessage(text, type) {
+
+    const div = document.createElement("div");
+
+    div.className = type;
+
+    div.innerHTML = text;
+
+    messages.appendChild(div);
+
+    messages.scrollTop = messages.scrollHeight;
+
+}
+
+/* ==========================
+   Envoyer à FastAPI
+========================== */
+
+async function sendMessage() {
+
+    const q = question.value.trim();
+
+    if (q === "") return;
+
+    addMessage(q, "user");
+
+    question.value = "";
+
+    try {
+
+        const response = await fetch("http://127.0.0.1:5000/api/ai/chat", {
+
+            method: "POST",
+
+            headers: {
+
+                "Content-Type": "application/json"
+
+            },
+
+            body: JSON.stringify({
+
+                question: q,
+
+                user_role: "RESP_MO",
+
+                contexte: "Dashboard BFI-OS GEI"
+
+            })
+
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+
+            addMessage(data, "bot");
+            console.log("🚀 ~ sendMessage ~ data:", data)
+
+        } else {
+
+            addMessage("❌ " + (data.detail || "Erreur"), "bot");
+
+        }
+
+    } catch (e) {
+
+        addMessage("❌ Impossible de contacter le serveur.", "bot");
+
+        console.error(e);
+
+    }
+
+}

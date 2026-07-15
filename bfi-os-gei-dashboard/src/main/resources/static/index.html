@@ -12,8 +12,54 @@
       rel="stylesheet"
     />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   </head>
   <body>
+    <!-- Floating Button -->
+<div id="chat-toggle">
+  <i class="fa-solid fa-comment"></i>
+</div>
+
+<!-- Chat Box -->
+<div id="chatbot">
+
+  <div class="chat-header">
+      <img src="img/bp.png" width="35">
+      <div>
+          <h4>Assistant IA</h4>
+          <span>En ligne</span>
+      </div>
+
+      <i class="fa-solid fa-xmark close-chat"></i>
+  </div>
+
+  <div class="chat-body" id="messages">
+
+      <div class="bot">
+          Bonjour 👋<br>
+          Comment puis-je vous aider ?
+      </div>
+
+  </div>
+
+  <div class="chat-footer">
+
+      <input
+          id="question"
+          type="text"
+          placeholder="Votre question..."
+      >
+
+      <button id="send">
+          <i class="fa-solid fa-paper-plane"></i>
+      </button>
+
+  </div>
+
+</div>
     <div class="app">
       <!-- ============ SIDEBAR ============ -->
     
